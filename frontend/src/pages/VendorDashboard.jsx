@@ -53,170 +53,140 @@ const VendorDashboard = () => {
 
     return (
         <div className="vendor-dashboard-page">
-            <div className="vendor-dashboard-layout">
-                <aside className="vendor-sidebar">
-                    <div className="vendor-logo">
-                        <h1>RentFlow</h1>
-                        <div className="vendor-badge">VENDOR</div>
-                    </div>
-
-                    <nav>
-                        <div className="vendor-nav-section">
-                            <div className="vendor-nav-title">Main</div>
-                            <Link to="/dashboard" className="vendor-nav-item active">
-                                <span>📊</span>
-                                <span>Dashboard</span>
-                            </Link>
-                            <Link to="/dashboard" className="vendor-nav-item">
-                                <span>📦</span>
-                                <span>Products</span>
-                            </Link>
-                            <Link to="/dashboard" className="vendor-nav-item">
-                                <span>🛒</span>
-                                <span>Orders</span>
-                            </Link>
-                            <Link to="/dashboard" className="vendor-nav-item">
-                                <span>💰</span>
-                                <span>Earnings</span>
-                            </Link>
-                        </div>
-
-                        <div className="vendor-nav-section">
-                            <div className="vendor-nav-title">Management</div>
-                            <Link to="/dashboard" className="vendor-nav-item">
-                                <span>📋</span>
-                                <span>Inventory</span>
-                            </Link>
-                            <Link to="/dashboard" className="vendor-nav-item">
-                                <span>📈</span>
-                                <span>Analytics</span>
-                            </Link>
-                            <Link to="/dashboard" className="vendor-nav-item">
-                                <span>⚙️</span>
-                                <span>Settings</span>
-                            </Link>
-                        </div>
-
-                        <div className="vendor-nav-section">
-                            <button type="button" onClick={handleLogout} className="vendor-nav-item">
-                                <span>🚪</span>
-                                <span>Logout</span>
-                            </button>
-                        </div>
-                    </nav>
-                </aside>
-
-                <main className="vendor-main">
-                    <div className="vendor-header">
-                        <div className="vendor-header-left">
-                            <h2>Vendor Dashboard</h2>
-                            <p className="vendor-header-subtitle">Manage your rental inventory and orders</p>
-                        </div>
-                        <div className="vendor-header-right">
-                            <Link to="/dashboard" className="vendor-btn vendor-btn-primary">
-                                <span>➕</span>
-                                Add New Product
-                            </Link>
+            {/* Top Navigation */}
+            <nav className="top-nav">
+                <div className="nav-container">
+                    <div className="nav-left">
+                        <Link to="/dashboard" className="logo" style={{ textDecoration: 'none', color: 'inherit' }}>
+                            <h1>RentFlow</h1>
+                        </Link>
+                        <div className="nav-tabs">
+                            <Link to="/dashboard" className="nav-tab active" style={{ textDecoration: 'none' }}>Dashboard</Link>
+                            <Link to="/orders" className="nav-tab" style={{ textDecoration: 'none' }}>Orders</Link>
+                            <button className="nav-tab">Products</button>
+                            <button className="nav-tab">Reports</button>
+                            <button className="nav-tab">Settings</button>
                         </div>
                     </div>
 
-                    <div className="vendor-revenue-section">
-                        <div className="vendor-revenue-card">
-                            <div className="vendor-revenue-label">Total Revenue This Month</div>
-                            <div className="vendor-revenue-value">$15,847</div>
-                            <div className="vendor-revenue-change">↑ 23% from last month</div>
-                        </div>
-
-                        <div className="vendor-stats-mini">
-                            <div className="vendor-mini-stat">
-                                <div className="vendor-mini-stat-label">Active Rentals</div>
-                                <div className="vendor-mini-stat-value">12</div>
-                            </div>
-                            <div className="vendor-mini-stat">
-                                <div className="vendor-mini-stat-label">Products Listed</div>
-                                <div className="vendor-mini-stat-value">45</div>
-                            </div>
-                            <div className="vendor-mini-stat">
-                                <div className="vendor-mini-stat-label">Pending Pickups</div>
-                                <div className="vendor-mini-stat-value">3</div>
+                    <div className="nav-right">
+                        <div className="user-menu" onClick={handleLogout}>
+                            <div className="user-avatar">{user?.name ? user.name.substring(0, 2).toUpperCase() : 'VR'}</div>
+                            <div>
+                                <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{user?.name || 'TechRentals'}</div>
+                                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Logout</div>
                             </div>
                         </div>
                     </div>
+                </div>
+            </nav>
 
-                    <div className="vendor-products-section">
-                        <div className="vendor-section-header">
-                            <h3 className="vendor-section-title">Your Products</h3>
-                            <div className="vendor-search-box">
-                                <input
-                                    type="text"
-                                    className="vendor-search-input"
-                                    placeholder="Search products..."
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                />
-                            </div>
+            <main className="vendor-main-content">
+                <div className="vendor-header">
+                    <div className="vendor-header-left">
+                        <h2 className="page-title">Vendor Dashboard</h2>
+                        <p className="vendor-header-subtitle">Manage your rental inventory and orders</p>
+                    </div>
+                    <div className="vendor-header-right">
+                        <button className="btn-new">➕ Add New Product</button>
+                    </div>
+                </div>
+
+                <div className="vendor-revenue-section">
+                    <div className="vendor-revenue-card">
+                        <div className="vendor-revenue-label">Total Revenue This Month</div>
+                        <div className="vendor-revenue-value">$15,847</div>
+                        <div className="vendor-revenue-change">↑ 23% from last month</div>
+                    </div>
+
+                    <div className="vendor-stats-mini">
+                        <div className="vendor-mini-stat">
+                            <div className="vendor-mini-stat-label">Active Rentals</div>
+                            <div className="vendor-mini-stat-value">12</div>
                         </div>
+                        <div className="vendor-mini-stat">
+                            <div className="vendor-mini-stat-label">Products Listed</div>
+                            <div className="vendor-mini-stat-value">45</div>
+                        </div>
+                        <div className="vendor-mini-stat">
+                            <div className="vendor-mini-stat-label">Pending Pickups</div>
+                            <div className="vendor-mini-stat-value">3</div>
+                        </div>
+                    </div>
+                </div>
 
-                        <table className="vendor-products-table">
-                            <thead>
-                                <tr>
-                                    <th>Product</th>
-                                    <th>Category</th>
-                                    <th>Daily Rate</th>
-                                    <th>Weekly Rate</th>
-                                    <th>Stock</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
+                <div className="vendor-products-section">
+                    <div className="vendor-section-header">
+                        <h3 className="vendor-section-title">Your Products</h3>
+                        <div className="vendor-search-box">
+                            <input
+                                type="text"
+                                className="vendor-search-input"
+                                placeholder="Search products..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                        </div>
+                    </div>
+
+                    <table className="vendor-products-table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Category</th>
+                                <th>Daily Rate</th>
+                                <th>Weekly Rate</th>
+                                <th>Stock</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {products.map((p) => (
+                                <tr key={p.id}>
+                                    <td>
+                                        <div className="vendor-product-name">{p.name}</div>
+                                        <div className="vendor-product-category">{p.category}</div>
+                                    </td>
+                                    <td>{p.category}</td>
+                                    <td className="vendor-price">${p.dailyRate}</td>
+                                    <td className="vendor-price">${p.weeklyRate}</td>
+                                    <td>{p.stock} units</td>
+                                    <td>
+                                        <span className={`vendor-stock-badge ${getStockClass(p.status)}`}>
+                                            {getStockLabel(p.status)}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div className="vendor-action-buttons">
+                                            <button className="vendor-icon-btn" title="Edit">✏️</button>
+                                            <button className="vendor-icon-btn" title="View">👁️</button>
+                                            <button className="vendor-icon-btn" title="Delete">🗑️</button>
+                                        </div>
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                {products.map((p) => (
-                                    <tr key={p.id}>
-                                        <td>
-                                            <div className="vendor-product-name">{p.name}</div>
-                                            <div className="vendor-product-category">{p.category}</div>
-                                        </td>
-                                        <td>{p.category === 'Camera' ? 'Cameras' : p.category === 'Lighting' ? 'Lighting' : p.category === 'Audio' ? 'Audio' : 'Stabilizers'}</td>
-                                        <td className="vendor-price">${p.dailyRate}</td>
-                                        <td className="vendor-price">${p.weeklyRate}</td>
-                                        <td>{p.stock} units</td>
-                                        <td>
-                                            <span className={`vendor-stock-badge ${getStockClass(p.status)}`}>
-                                                {getStockLabel(p.status)}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <div className="vendor-action-buttons">
-                                                <button type="button" className="vendor-icon-btn" title="Edit">✏️</button>
-                                                <button type="button" className="vendor-icon-btn" title="View">👁️</button>
-                                                <button type="button" className="vendor-icon-btn" title="Delete">🗑️</button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
 
-                    <div className="vendor-orders-section">
-                        <h3 className="vendor-section-title">Recent Orders</h3>
-
-                        {orders.map((order) => (
-                            <div key={order.id} className="vendor-order-item">
-                                <div className="vendor-order-id">#{order.id}</div>
-                                <div className="vendor-order-details">
-                                    <h4>{order.customer}</h4>
-                                    <p className="vendor-order-meta">{order.product} • {order.period}</p>
-                                </div>
-                                <div className="vendor-order-amount">${order.amount.toLocaleString()}</div>
-                                <span className={`vendor-order-status ${getOrderStatusClass(order.status)}`}>
-                                    {getOrderStatusLabel(order.status)}
-                                </span>
+                <div className="vendor-orders-section">
+                    <h3 className="vendor-section-title">Recent Orders</h3>
+                    {orders.map((order) => (
+                        <div key={order.id} className="vendor-order-item">
+                            <div className="vendor-order-id">#{order.id}</div>
+                            <div className="vendor-order-details">
+                                <h4>{order.customer}</h4>
+                                <p className="vendor-order-meta">{order.product} • {order.period}</p>
                             </div>
-                        ))}
-                    </div>
-                </main>
-            </div>
+                            <div className="vendor-order-amount">${order.amount.toLocaleString()}</div>
+                            <span className={`vendor-order-status ${getOrderStatusClass(order.status)}`}>
+                                {getOrderStatusLabel(order.status)}
+                            </span>
+                        </div>
+                    ))}
+                </div>
+            </main>
         </div>
     );
 };

@@ -19,6 +19,7 @@ import OrderSuccess from './pages/OrderSuccess';
 import Terms from './pages/Terms';
 import About from './pages/About';
 import Contact from './pages/Contact';
+import VendorOrders from './pages/VendorOrders';
 
 const ProtectedRoute = ({ children }) => {
     const { user, loading } = useAuth();
@@ -118,6 +119,14 @@ function App() {
                                     element={
                                         <ProtectedRoute>
                                             <DashboardRouter />
+                                        </ProtectedRoute>
+                                    }
+                                />
+                                <Route
+                                    path="/orders"
+                                    element={
+                                        <ProtectedRoute>
+                                            <VendorOrders />
                                         </ProtectedRoute>
                                     }
                                 />

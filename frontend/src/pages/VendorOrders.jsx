@@ -35,18 +35,21 @@ const VendorOrders = () => {
                             <h1>RentFlow</h1>
                         </Link>
                         <div className="nav-tabs">
-                            <button className="nav-tab active">Orders</button>
+                            <Link to="/dashboard" className="nav-tab" style={{ textDecoration: 'none' }}>Dashboard</Link>
+                            <Link to="/orders" className="nav-tab active" style={{ textDecoration: 'none' }}>Orders</Link>
                             <button className="nav-tab">Products</button>
                             <button className="nav-tab">Reports</button>
                             <button className="nav-tab">Settings</button>
                         </div>
                     </div>
 
-                    <div className="user-menu">
-                        <div className="user-avatar">{user?.name ? user.name.substring(0, 2).toUpperCase() : 'VR'}</div>
-                        <div>
-                            <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{user?.name || 'TechRentals'}</div>
-                            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{user?.role === 'VENDOR' ? 'Vendor' : 'Vendor'}</div>
+                    <div className="nav-right">
+                        <div className="user-menu">
+                            <div className="user-avatar">{user?.name ? user.name.substring(0, 2).toUpperCase() : 'VR'}</div>
+                            <div>
+                                <div style={{ fontWeight: 600, fontSiz: '0.9rem' }}>{user?.name || 'TechRentals'}</div>
+                                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{user?.role === 'VENDOR' ? 'Vendor' : 'Vendor'}</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -72,14 +75,14 @@ const VendorOrders = () => {
                     </div>
 
                     <div className="view-controls">
-                        <button 
-                            className={`view-btn ${viewMode === 'kanban' ? 'active' : ''}`} 
+                        <button
+                            className={`view-btn ${viewMode === 'kanban' ? 'active' : ''}`}
                             onClick={() => setViewMode('kanban')}
                         >
                             ▦
                         </button>
-                        <button 
-                            className={`view-btn ${viewMode === 'list' ? 'active' : ''}`} 
+                        <button
+                            className={`view-btn ${viewMode === 'list' ? 'active' : ''}`}
                             onClick={() => setViewMode('list')}
                         >
                             ☰
@@ -99,9 +102,9 @@ const VendorOrders = () => {
                         </div>
 
                         {filters.map((filter) => (
-                            <div 
+                            <div
                                 key={filter.name}
-                                className={`filter-item ${activeFilter === filter.name ? 'active' : ''}`}
+                                className={`filter-item ${filter.name === activeFilter ? 'active' : ''}`}
                                 onClick={() => setActiveFilter(filter.name)}
                             >
                                 <span>{filter.name}</span>
@@ -116,7 +119,6 @@ const VendorOrders = () => {
                     {/* Kanban View */}
                     <div className={`kanban-view ${viewMode === 'kanban' ? 'active' : ''}`}>
                         <div className="kanban-grid">
-                            {/* Card 1 */}
                             <div className="kanban-card">
                                 <div className="card-header">
                                     <div>
@@ -130,7 +132,6 @@ const VendorOrders = () => {
                                 <div className="status-badge status-sale-order">Sale order</div>
                             </div>
 
-                            {/* Card 2 */}
                             <div className="kanban-card">
                                 <div className="card-header">
                                     <div>
@@ -147,7 +148,6 @@ const VendorOrders = () => {
                                 </div>
                             </div>
 
-                            {/* Card 3 */}
                             <div className="kanban-card">
                                 <div className="card-header">
                                     <div>
@@ -161,7 +161,6 @@ const VendorOrders = () => {
                                 <div className="status-badge status-invoiced">Invoiced</div>
                             </div>
 
-                            {/* Card 4 */}
                             <div className="kanban-card">
                                 <div className="card-header">
                                     <div>
@@ -175,7 +174,6 @@ const VendorOrders = () => {
                                 <div className="status-badge status-cancelled">Cancelled</div>
                             </div>
 
-                            {/* Card 5 */}
                             <div className="kanban-card">
                                 <div className="card-header">
                                     <div>
@@ -189,7 +187,6 @@ const VendorOrders = () => {
                                 <div className="status-badge status-quotation">Quotation</div>
                             </div>
 
-                            {/* Card 6 */}
                             <div className="kanban-card">
                                 <div className="card-header">
                                     <div>
@@ -203,7 +200,6 @@ const VendorOrders = () => {
                                 <div className="status-badge status-sale-order">Sale order</div>
                             </div>
 
-                            {/* Card 7 */}
                             <div className="kanban-card">
                                 <div className="card-header">
                                     <div>
@@ -222,13 +218,13 @@ const VendorOrders = () => {
                     {/* List View */}
                     <div className={`list-view ${viewMode === 'list' ? 'active' : ''}`}>
                         <div className="rental-status-label">Rental Status</div>
-                        
+
                         <div className="list-table">
                             <table>
                                 <thead>
                                     <tr>
                                         <th className="checkbox-cell">
-                                            <div 
+                                            <div
                                                 className={`custom-checkbox ${checkedItems['all'] ? 'checked' : ''}`}
                                                 onClick={() => toggleCheckbox('all')}
                                             >
@@ -253,7 +249,7 @@ const VendorOrders = () => {
                                     ].map((row) => (
                                         <tr key={row.id}>
                                             <td className="checkbox-cell">
-                                                <div 
+                                                <div
                                                     className={`custom-checkbox ${checkedItems[row.id] ? 'checked' : ''}`}
                                                     onClick={(e) => {
                                                         e.stopPropagation();
