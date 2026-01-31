@@ -24,33 +24,35 @@ export const AuthProvider = ({ children }) => {
 
     const login = async (email, password) => {
         try {
-            const response = await axios.post('http://localhost:5000/api/auth/login', { email, password });
-            const { user, token } = response.data.data;
+            const payload = { email: (email || '').trim(), password: password ?? '' };
+            const response = await axios.post('http://localhost:5000/api/auth/login', payload);
+            const data = response?.data?.data ?? response?.data;
+            const user = data?.user;
+            const token = data?.token;
+            if (!user || !token) {
+                return { success: false, message: 'Invalid response from server' };
+            }
             localStorage.setItem('token', token);
             localStorage.setItem('user', JSON.stringify(user));
             setUser(user);
             return { success: true };
         } catch (error) {
-            return {
-                success: false,
-                message: error.response?.data?.message || 'Login failed'
-            };
+            const msg = error.response?.data?.message || error.message || 'Login failed';
+            return { success: false, message: msg };
         }
     };
 
     const signup = async (userData) => {
         try {
             const response = await axios.post('http://localhost:5000/api/auth/signup', userData);
-            const { user, token } = response.data.data;
-            localStorage.setItem('token', token);
-            localStorage.setItem('user', JSON.stringify(user));
-            setUser(user);
+            if (!response.data?.success) {
+                return { success: false, message: response.data?.message || 'Signup failed' };
+            }
+            // Don't auto-login: user must sign in on the login page after creating account
             return { success: true };
         } catch (error) {
-            return {
-                success: false,
-                message: error.response?.data?.message || 'Signup failed'
-            };
+            const msg = error.response?.data?.message || error.message || 'Signup failed. Check your connection and that the server is running.';
+            return { success: false, message: msg };
         }
     };
 

@@ -6,6 +6,47 @@ This project is inspired by real-world rental ERP platforms (e.g., equipment & f
 
 ---
 
+## ⚡ Setup & running the app
+
+### Backend (Node + PostgreSQL)
+
+1. **Install dependencies**
+   ```bash
+   cd backend && npm install
+   ```
+
+2. **Database (PostgreSQL)**  
+   Create a PostgreSQL database (local or cloud). Then set the connection string in `backend/.env`:
+   ```env
+   DATABASE_URL="postgresql://USER:PASSWORD@HOST:5432/DATABASE_NAME"
+   ```
+
+3. **Create database tables (Prisma)**  
+   Tables are defined in `backend/prisma/schema.prisma`. To create/update them:
+   ```bash
+   cd backend
+   npx prisma migrate dev
+   ```
+   - First run: creates the `User` table (and any other models) and a migration history table.
+   - Use `npx prisma migrate dev --name your_migration_name` to add new migrations after changing the schema.
+   - To sync schema without migration files (e.g. quick dev): `npx prisma db push`.
+
+4. **Start the API**
+   ```bash
+   npm run dev
+   ```
+   API runs at `http://localhost:5000`. If signup/login fails with "Database is not available", check `DATABASE_URL` and that you ran `npx prisma migrate dev`.
+
+### Frontend (React + Vite)
+
+1. **Install and run**
+   ```bash
+   cd frontend && npm install && npm run dev
+   ```
+2. Open the URL shown (e.g. `http://localhost:5173`). You’ll see the **index (landing) page**; use **Sign up** or **Sign in** to create an account or log in.
+
+---
+
 ## 🚀 Features Overview
 
 ### 🔐 Authentication & User Management
