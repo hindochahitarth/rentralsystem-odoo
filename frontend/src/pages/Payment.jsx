@@ -2,12 +2,15 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import { useWishlist } from '../context/WishlistContext';
+import api from '../api/client';
 import './Payment.css';
 
 const Payment = () => {
     const navigate = useNavigate();
     const { user, logout } = useAuth();
-    const { cartItems, getCartTotal, getCartCount, clearCart } = useCart();
+    const { cartItems, getCartTotal, getCartCount, clearCart, rentalPeriod } = useCart();
+    const { wishlist } = useWishlist();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [saveDetails, setSaveDetails] = useState(false);
@@ -26,14 +29,31 @@ const Payment = () => {
     const openModal = () => setIsModalOpen(true);
     const closeModal = () => setIsModalOpen(false);
 
-    const handlePayment = (e) => {
+    const handlePayment = async (e) => {
         e.preventDefault();
-        // Simulate payment processing
-        setTimeout(() => {
-            clearCart();
-            closeModal();
-            navigate('/order-success');
-        }, 1500);
+
+        try {
+            // Create Order in Backend
+            const response = await api.post('/orders', {
+                items: cartItems,
+                total: getCartTotal()
+            });
+
+            if (response.data.success) {
+                // Simulate payment processing delay if needed, or just proceed
+                setTimeout(() => {
+                    clearCart();
+                    closeModal();
+                    // Pass the created order details to the success page if needed, or just the ID
+                    navigate('/order-success', { state: { order: response.data.data } });
+                }, 1500);
+            } else {
+                alert('Order creation failed: ' + response.data.message);
+            }
+        } catch (error) {
+            console.error('Payment Error:', error);
+            alert('Payment failed. Please try again.');
+        }
     };
 
     return (
@@ -45,9 +65,9 @@ const Payment = () => {
 
                     <div className="nav-links">
                         <Link to="/dashboard" className="nav-link">Products</Link>
-                        <Link to="#" className="nav-link">Terms & Condition</Link>
-                        <Link to="#" className="nav-link">About us</Link>
-                        <Link to="#" className="nav-link">Contact Us</Link>
+                        <Link to="/terms" className="nav-link">Terms & Condition</Link>
+                        <Link to="/about" className="nav-link">About us</Link>
+                        <Link to="/contact" className="nav-link">Contact Us</Link>
                     </div>
 
                     <div className="search-container">
@@ -56,11 +76,10 @@ const Payment = () => {
                     </div>
 
                     <div className="nav-actions">
-                        <div className="icon-btn">❤️</div>
-                        <div className="icon-btn">
-                            🛒
-                            <span className="cart-badge">{getCartCount()}</span>
-                        </div>
+                        <div className="icon-btn" title="Wishlist">❤️ <span className="cart-badge" style={{ background: 'var(--accent)' }}>{wishlist.length}</span></div>
+                        <Link to="/cart" className="icon-btn" style={{ textDecoration: 'none', color: 'inherit' }}>
+                            🛒 <span className="cart-badge">{getCartCount()}</span>
+                        </Link>
                         <div className="user-profile-btn" onClick={toggleUserDropdown} style={{ position: 'relative' }}>
                             <div>👤</div>
                             {/* User Dropdown Menu */}
@@ -121,7 +140,7 @@ const Payment = () => {
                         <h3>Card</h3>
                         <label className="form-label">Payment Details</label>
                         <input type="text" className="form-input" placeholder="xxxx xxxx xxxx xxxx" defaultValue="" />
-                        
+
                         <div className="checkbox-group" onClick={() => setSaveDetails(!saveDetails)}>
                             <div className={`checkbox ${saveDetails ? 'checked' : ''}`}></div>
                             <label>Save my payment details</label>
@@ -131,7 +150,7 @@ const Payment = () => {
                     {/* Delivery & Billing */}
                     <div className="form-group">
                         <h3>Delivery & Billing</h3>
-                        
+
                         <div className="address-card">
                             <div className="address-header">
                                 <div className="address-badge">Delivery & Billing</div>
@@ -162,7 +181,7 @@ const Payment = () => {
                                 </div>
                             </div>
                         ))}
-                         {cartItems.length > 3 && (
+                        {cartItems.length > 3 && (
                             <div style={{ textAlign: 'center', color: 'var(--text-muted)', marginBottom: '1rem' }}>
                                 + {cartItems.length - 3} more items
                             </div>
@@ -171,7 +190,11 @@ const Payment = () => {
                         {/* Rental Period */}
                         <div style={{ marginBottom: '1.5rem' }}>
                             <div style={{ color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Rental Period</div>
-                            <div>Today to Tomorrow</div>
+                            <div>
+                                {rentalPeriod?.startDate ? `${rentalPeriod.startDate} ${rentalPeriod.startTime}` : 'Not selected'}
+                                {' to '}
+                                {rentalPeriod?.endDate ? `${rentalPeriod.endDate} ${rentalPeriod.endTime}` : 'Not selected'}
+                            </div>
                         </div>
 
                         {/* Summary */}
@@ -190,9 +213,9 @@ const Payment = () => {
 
                         {/* Buttons */}
                         <button className="btn btn-pay" onClick={openModal}>Pay Now</button>
-                        
+
                         <div className="or-divider">OR</div>
-                        
+
                         <button className="btn btn-back" onClick={() => navigate('/address')}>‹ Back to Address</button>
                     </div>
                 </div>

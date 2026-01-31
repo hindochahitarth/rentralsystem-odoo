@@ -331,6 +331,16 @@
     color: var(--accent);
 }
 
+.cart-page .coupon-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.cart-page .coupon-section input {
+    margin-bottom: 0;
+}
+
 .cart-page .action-buttons {
     display: flex;
     flex-direction: column;

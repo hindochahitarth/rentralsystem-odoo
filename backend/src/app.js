@@ -16,6 +16,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/cart', cartRoutes);
+app.use('/api/orders', require('./routes/orderRoutes'));
 
 app.get('/health', (req, res) => {
     res.status(200).json({ status: 'OK' });
