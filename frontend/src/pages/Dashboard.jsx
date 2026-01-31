@@ -124,7 +124,7 @@ const Dashboard = () => {
                                     <div className="dropdown-user-name">{displayName}</div>
                                     <div className="dropdown-user-email">{email}</div>
                                 </div>
-                                <Link to="#" className="dropdown-item"><span>👤</span><span>My account/ My Profile</span></Link>
+                                <Link to="/vendor/profile" className="dropdown-item"><span>👤</span><span>My account/ My Profile</span></Link>
                                 <Link to="#" className="dropdown-item"><span>📦</span><span>My Orders</span></Link>
                                 <Link to="#" className="dropdown-item"><span>⚙️</span><span>Settings</span></Link>
                                 <div className="dropdown-divider" />

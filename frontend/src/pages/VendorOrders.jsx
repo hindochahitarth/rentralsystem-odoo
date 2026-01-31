@@ -1,13 +1,20 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './VendorOrders.css';
 
 const VendorOrders = () => {
-    const { user } = useAuth();
+    const { user, logout } = useAuth();
+    const navigate = useNavigate();
     const [viewMode, setViewMode] = useState('kanban'); // 'kanban' or 'list'
     const [activeFilter, setActiveFilter] = useState('Total');
     const [checkedItems, setCheckedItems] = useState({});
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+    const handleLogout = () => {
+        logout();
+        navigate('/', { replace: true });
+    };
 
     const filters = [
         { name: 'Total', count: 7 },
@@ -44,12 +51,23 @@ const VendorOrders = () => {
                     </div>
 
                     <div className="nav-right">
-                        <div className="user-menu">
+                        <div className="user-menu" onClick={() => setIsDropdownOpen(!isDropdownOpen)} style={{ cursor: 'pointer', position: 'relative' }}>
                             <div className="user-avatar">{user?.name ? user.name.substring(0, 2).toUpperCase() : 'VR'}</div>
                             <div>
-                                <div style={{ fontWeight: 600, fontSiz: '0.9rem' }}>{user?.name || 'TechRentals'}</div>
+                                <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{user?.name || 'TechRentals'}</div>
                                 <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{user?.role === 'VENDOR' ? 'Vendor' : 'Vendor'}</div>
                             </div>
+
+                            {isDropdownOpen && (
+                                <div className="user-dropdown-menu">
+                                    <Link to="/vendor/profile" className="dropdown-item">
+                                        <span>👤</span> Profile
+                                    </Link>
+                                    <button onClick={handleLogout} className="dropdown-item">
+                                        <span>🚪</span> Logout
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

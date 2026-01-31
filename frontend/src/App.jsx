@@ -20,6 +20,7 @@ import Terms from './pages/Terms';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import VendorOrders from './pages/VendorOrders';
+import VendorProfile from './pages/VendorProfile';
 import VendorNewOrder from './pages/VendorNewOrder';
 import VendorInvoice from './pages/VendorInvoice';
 
@@ -129,6 +130,14 @@ function App() {
                                     element={
                                         <ProtectedRoute>
                                             <VendorOrders />
+                                        </ProtectedRoute>
+                                    }
+                                />
+                                <Route
+                                    path="/vendor/profile"
+                                    element={
+                                        <ProtectedRoute>
+                                            <VendorProfile />
                                         </ProtectedRoute>
                                     }
                                 />
