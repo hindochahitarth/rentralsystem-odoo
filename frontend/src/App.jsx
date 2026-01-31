@@ -50,7 +50,30 @@ function App() {
                                 </ProtectedRoute>
                             }
                         />
-                        
+                        <Route
+                            path="/address"
+                            element={
+                                <ProtectedRoute>
+                                    <Address />
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/payment"
+                            element={
+                                <ProtectedRoute>
+                                    <Payment />
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/order-success"
+                            element={
+                                <ProtectedRoute>
+                                    <OrderSuccess />
+                                </ProtectedRoute>
+                            }
+                        /> 
                         <Route
                             path="/product/:id"
                             element={

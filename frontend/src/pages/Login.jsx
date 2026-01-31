@@ -126,21 +126,6 @@ const Login = () => {
                         </button>
                     </form>
 
-                    <div className="login-divider">
-                        <span>or continue with</span>
-                    </div>
-
-                    <div className="login-social">
-                        <button type="button" className="login-social-btn" disabled>
-                            <span>🔵</span>
-                            Google
-                        </button>
-                        <button type="button" className="login-social-btn" disabled>
-                            <span>⚫</span>
-                            GitHub
-                        </button>
-                    </div>
-
                     <p className="login-signup-link">
                         Don&apos;t have an account? <Link to="/signup">Sign up for free</Link>
                     </p>
