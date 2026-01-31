@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Dashboard - RentFlow</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #0a0e27;
+            --accent: #00d9ff;
+            --accent-warm: #ff6b35;
+            --surface: #1a1f3a;
+            --surface-light: #252b4a;
+            --text: #e8eaf0;
+            --text-muted: #9ca3af;
+            --border: rgba(255, 255, 255, 0.1);
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--primary);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        /* Top Navigation */
+        .top-nav {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-warm));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.2rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            padding: 0.75rem 1.25rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .nav-link:hover {
+            background: rgba(0, 217, 255, 0.1);
+            color: var(--accent);
+        }
+
+        .search-container {
+            flex: 1;
+            max-width: 600px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.875rem 3rem 0.875rem 1.25rem;
+            background: var(--surface-light);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            color: var(--text);
+            font-size: 0.95rem;
+            transition: all 0.3s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: var(--primary);
+        }
+
+        .search-btn {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--accent);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .search-btn:hover {
+            background: var(--accent-warm);
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .icon-btn {
+            width: 44px;
+            height: 44px;
+            background: var(--surface-light);
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            font-size: 1.25rem;
+        }
+
+        .icon-btn:hover {
+            border-color: var(--accent);
+            background: rgba(0, 217, 255, 0.1);
+        }
+
+        .cart-badge {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: var(--accent-warm);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+
+        .user-profile-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 1rem;
+            background: var(--surface-light);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .user-profile-btn:hover {
+            border-color: var(--accent);
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-warm));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .dropdown-arrow {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* User Dropdown Menu */
+        .user-dropdown {
+            position: absolute;
+            top: 110%;
+            right: 0;
+            background: var(--surface);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            min-width: 220px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s;
+        }
+
+        .user-dropdown.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-header {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .dropdown-user-name {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .dropdown-user-email {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .dropdown-item {
+            padding: 0.875rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(0, 217, 255, 0.1);
+            color: var(--accent);
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background: var(--border);
+            margin: 0.5rem 0;
+        }
+
+        /* Main Layout */
+        .main-layout {
+            display: flex;
+            gap: 2rem;
+            padding: 2rem;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        /* Left Sidebar Filters */
+        .filter-sidebar {
+            width: 280px;
+            flex-shrink: 0;
+        }
+
+        .filter-section {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .filter-toggle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        .filter-options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .filter-option {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+        }
+
+        .filter-checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .filter-option input[type="checkbox"] {
+            display: none;
+        }
+
+        .filter-option input[type="checkbox"]:checked + .filter-checkbox {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .filter-option input[type="checkbox"]:checked + .filter-checkbox::after {
+            content: '✓';
+            color: white;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
+        .filter-label {
+            color: var(--text);
+            font-size: 0.95rem;
+        }
+
+        /* Color Filter */
+        .color-options {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .color-swatch {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .color-swatch:hover,
+        .color-swatch.active {
+            border-color: var(--accent);
+            transform: scale(1.1);
+        }
+
+        /* Price Range Filter */
+        .price-range {
+            margin-top: 1rem;
+        }
+
+        .range-slider {
+            width: 100%;
+            height: 6px;
+            background: var(--surface-light);
+            border-radius: 3px;
+            position: relative;
+            margin: 2rem 0 1rem 0;
+        }
+
+        .range-progress {
+            height: 100%;
+            background: var(--accent);
+            border-radius: 3px;
+            width: 60%;
+        }
+
+        .price-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* Product Grid */
+        .products-section {
+            flex: 1;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .section-header h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .view-toggle {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .view-btn {
+            padding: 0.5rem 1rem;
+            background: var(--surface);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: var(--text-muted);
+        }
+
+        .view-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .product-card {
+            background: var(--surface);
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .product-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px rgba(0, 217, 255, 0.2);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 200px;
+            background: var(--surface-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .out-of-stock-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(10, 14, 39, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--text);
+        }
+
+        .product-info {
+            padding: 1.25rem;
+        }
+
+        .product-name {
+            font-weight: 600;
+            font-size: 1.05rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .product-price {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+        }
+
+        .price-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .product-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 0.75rem;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-warm);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 2px solid var(--border);
+            color: var(--text);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 3rem;
+        }
+
+        .page-btn {
+            width: 44px;
+            height: 44px;
+            background: var(--surface);
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        .page-btn:hover,
+        .page-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+
+        .page-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .filter-sidebar {
+                display: none;
+            }
+
+            .products-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .search-container {
+                max-width: 100%;
+            }
+
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+        <div class="nav-container">
+            <div class="logo-section">
+                <div class="logo-icon">🏠</div>
+                <span style="font-weight: 700; font-size: 1.1rem;">Your Logo</span>
+            </div>
+
+            <div class="nav-links">
+                <a href="#" class="nav-link">Products</a>
+                <a href="#" class="nav-link">Terms & Condition</a>
+                <a href="#" class="nav-link">About us</a>
+                <a href="#" class="nav-link">Contact Us</a>
+            </div>
+
+            <div class="search-container">
+                <input type="text" class="search-input" placeholder="Search for products...">
+                <button class="search-btn">🔍</button>
+            </div>
+
+            <div class="nav-actions">
+                <div class="icon-btn" title="Wishlist">
+                    ❤️
+                </div>
+                <div class="icon-btn" title="Cart">
+                    🛒
+                    <span class="cart-badge">0</span>
+                </div>
+                <div class="user-profile-btn" onclick="toggleUserDropdown()">
+                    <div class="user-avatar">UP</div>
+                    <span class="dropdown-arrow">▼</span>
+                    
+                    <!-- User Dropdown Menu -->
+                    <div class="user-dropdown" id="userDropdown">
+                        <div class="dropdown-header">
+                            <div class="dropdown-user-name">User Profile</div>
+                            <div class="dropdown-user-email">user@example.com</div>
+                        </div>
+                        <a href="#" class="dropdown-item">
+                            <span>👤</span>
+                            <span>My account/ My Profile</span>
+                        </a>
+                        <a href="#" class="dropdown-item">
+                            <span>📦</span>
+                            <span>My Orders</span>
+                        </a>
+                        <a href="#" class="dropdown-item">
+                            <span>⚙️</span>
+                            <span>Settings</span>
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a href="#" class="dropdown-item">
+                            <span>🚪</span>
+                            <span>Logout</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Customer Login Notice -->
+    <div style="background: var(--surface); border-bottom: 1px solid var(--border); padding: 0.75rem 2rem; text-align: center;">
+        <span style="color: var(--text-muted); font-size: 0.9rem;">Customer Login</span>
+        <span style="color: var(--accent); margin-left: 2rem; font-weight: 600;">Home Page up on Sign In</span>
+    </div>
+
+    <!-- Main Layout -->
+    <div class="main-layout">
+        <!-- Left Sidebar - Filters -->
+        <aside class="filter-sidebar">
+            <!-- Brand Filter -->
+            <div class="filter-section">
+                <div class="filter-title">
+                    <span>Brand</span>
+                    <span class="filter-toggle">▼</span>
+                </div>
+                <div class="filter-options">
+                    <label class="filter-option">
+                        <input type="checkbox">
+                        <div class="filter-checkbox"></div>
+                        <span class="filter-label">xxxxxxx</span>
+                    </label>
+                    <label class="filter-option">
+                        <input type="checkbox">
+                        <div class="filter-checkbox"></div>
+                        <span class="filter-label">xxxxxxx</span>
+                    </label>
+                    <label class="filter-option">
+                        <input type="checkbox">
+                        <div class="filter-checkbox"></div>
+                        <span class="filter-label">xxxxxxxx</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Color Filter -->
+            <div class="filter-section">
+                <div class="filter-title">
+                    <span>Color</span>
+                    <span class="filter-toggle">▼</span>
+                </div>
+                <div class="color-options">
+                    <div class="color-swatch" style="background: #4a90e2;"></div>
+                    <div class="color-swatch" style="background: #9b59b6;"></div>
+                    <div class="color-swatch active" style="background: #f39c12;"></div>
+                    <div class="color-swatch" style="background: #e74c3c;"></div>
+                </div>
+            </div>
+
+            <!-- Duration Filter -->
+            <div class="filter-section">
+                <div class="filter-title">
+                    <span>Duration</span>
+                    <span class="filter-toggle">▼</span>
+                </div>
+                <div class="filter-options">
+                    <label class="filter-option">
+                        <input type="checkbox">
+                        <div class="filter-checkbox"></div>
+                        <span class="filter-label">All Durations</span>
+                    </label>
+                    <label class="filter-option">
+                        <input type="checkbox">
+                        <div class="filter-checkbox"></div>
+                        <span class="filter-label">1 Month</span>
+                    </label>
+                    <label class="filter-option">
+                        <input type="checkbox">
+                        <div class="filter-checkbox"></div>
+                        <span class="filter-label">6 Month</span>
+                    </label>
+                    <label class="filter-option">
+                        <input type="checkbox">
+                        <div class="filter-checkbox"></div>
+                        <span class="filter-label">1 Year</span>
+                    </label>
+                    <label class="filter-option">
+                        <input type="checkbox">
+                        <div class="filter-checkbox"></div>
+                        <span class="filter-label">2 Years</span>
+                    </label>
+                    <label class="filter-option">
+                        <input type="checkbox">
+                        <div class="filter-checkbox"></div>
+                        <span class="filter-label">3 Years</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Price Range Filter -->
+            <div class="filter-section">
+                <div class="filter-title">
+                    <span>Price Range</span>
+                    <span class="filter-toggle">▼</span>
+                </div>
+                <div class="price-range">
+                    <div class="range-slider">
+                        <div class="range-progress"></div>
+                    </div>
+                    <div class="price-labels">
+                        <span>$10</span>
+                        <span>$10000</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Products Section -->
+        <div class="products-section">
+            <div class="section-header">
+                <h2>Available Products</h2>
+            </div>
+
+            <div class="products-grid">
+                <!-- Product 1 -->
+                <div class="product-card">
+                    <div class="product-image">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200'%3E%3Crect fill='%23252b4a' width='300' height='200'/%3E%3Ctext x='50%25' y='50%25' font-size='48' fill='%239ca3af' text-anchor='middle' dy='.3em'%3E🛋️%3C/text%3E%3C/svg%3E" alt="Sofa">
+                    </div>
+                    <div class="product-info">
+                        <div class="product-name">Modern Sofa</div>
+                        <div class="product-price">
+                            <span class="price-label">Rxx / per Month</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product 2 - Out of Stock -->
+                <div class="product-card">
+                    <div class="product-image">
+                        <div class="out-of-stock-overlay">Out of stock</div>
+                    </div>
+                    <div class="product-info">
+                        <div class="product-name">Product Name</div>
+                        <div class="product-price">
+                            <span class="price-label">Rxx / per hour</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product 3 -->
+                <div class="product-card">
+                    <div class="product-image">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200'%3E%3Crect fill='%23252b4a' width='300' height='200'/%3E%3Ctext x='50%25' y='50%25' font-size='48' fill='%239ca3af' text-anchor='middle' dy='.3em'%3E🗄️%3C/text%3E%3C/svg%3E" alt="Cabinet">
+                    </div>
+                    <div class="product-info">
+                        <div class="product-name">Red Cabinet</div>
+                        <div class="product-price">
+                            <span class="price-label">Rxx / per month</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product 4 -->
+                <div class="product-card">
+                    <div class="product-image">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200'%3E%3Crect fill='%23252b4a' width='300' height='200'/%3E%3Ctext x='50%25' y='50%25' font-size='48' fill='%239ca3af' text-anchor='middle' dy='.3em'%3E📺%3C/text%3E%3C/svg%3E" alt="Smart TV">
+                    </div>
+                    <div class="product-info">
+                        <div class="product-name">Smart TV 55"</div>
+                        <div class="product-price">
+                            <span class="price-label">Rxx / per day</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product 5 -->
+                <div class="product-card">
+                    <div class="product-image">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200'%3E%3Crect fill='%23252b4a' width='300' height='200'/%3E%3Ctext x='50%25' y='50%25' font-size='48' fill='%239ca3af' text-anchor='middle' dy='.3em'%3E🖥️%3C/text%3E%3C/svg%3E" alt="Computer Set">
+                    </div>
+                    <div class="product-info">
+                        <div class="product-name">Desktop Computer Set</div>
+                        <div class="product-price">
+                            <span class="price-label">Rxx / per day</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product 6 -->
+                <div class="product-card">
+                    <div class="product-image">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200'%3E%3Crect fill='%23252b4a' width='300' height='200'/%3E%3Ctext x='50%25' y='50%25' font-size='48' fill='%239ca3af' text-anchor='middle' dy='.3em'%3E💻%3C/text%3E%3C/svg%3E" alt="Laptop">
+                    </div>
+                    <div class="product-info">
+                        <div class="product-name">Gaming Laptop</div>
+                        <div class="product-price">
+                            <span class="price-label">Rxx / per day</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product 7 -->
+                <div class="product-card">
+                    <div class="product-image">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200'%3E%3Crect fill='%23252b4a' width='300' height='200'/%3E%3Ctext x='50%25' y='50%25' font-size='48' fill='%239ca3af' text-anchor='middle' dy='.3em'%3E🎮%3C/text%3E%3C/svg%3E" alt="Gaming Console">
+                    </div>
+                    <div class="product-info">
+                        <div class="product-name">PlayStation 5</div>
+                        <div class="product-price">
+                            <span class="price-label">Rxx / per hour</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product 8 -->
+                <div class="product-card">
+                    <div class="product-image">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200'%3E%3Crect fill='%23252b4a' width='300' height='200'/%3E%3Ctext x='50%25' y='50%25' font-size='48' fill='%239ca3af' text-anchor='middle' dy='.3em'%3E🛏️%3C/text%3E%3C/svg%3E" alt="Bed">
+                    </div>
+                    <div class="product-info">
+                        <div class="product-name">Luxury Bed Frame</div>
+                        <div class="product-price">
+                            <span class="price-label">Rxx / per month</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product 9 -->
+                <div class="product-card">
+                    <div class="product-image">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200'%3E%3Crect fill='%23252b4a' width='300' height='200'/%3E%3Ctext x='50%25' y='50%25' font-size='48' fill='%239ca3af' text-anchor='middle' dy='.3em'%3E🔊%3C/text%3E%3C/svg%3E" alt="Speakers">
+                    </div>
+                    <div class="product-info">
+                        <div class="product-name">Studio Monitors</div>
+                        <div class="product-price">
+                            <span class="price-label">Rxx / per day</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product 10 -->
+                <div class="product-card">
+                    <div class="product-image">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200'%3E%3Crect fill='%23252b4a' width='300' height='200'/%3E%3Ctext x='50%25' y='50%25' font-size='48' fill='%239ca3af' text-anchor='middle' dy='.3em'%3E📷%3C/text%3E%3C/svg%3E" alt="Camera">
+                    </div>
+                    <div class="product-info">
+                        <div class="product-name">Vintage Camera</div>
+                        <div class="product-price">
+                            <span class="price-label">Rxx / per hour</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination">
+                <button class="page-btn">⏮️</button>
+                <button class="page-btn active">1</button>
+                <button class="page-btn">2</button>
+                <button class="page-btn">...</button>
+                <button class="page-btn">⏭️</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Toggle User Dropdown
+        function toggleUserDropdown() {
+            const dropdown = document.getElementById('userDropdown');
+            dropdown.classList.toggle('active');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const userBtn = document.querySelector('.user-profile-btn');
+            const dropdown = document.getElementById('userDropdown');
+            
+            if (!userBtn.contains(event.target)) {
+                dropdown.classList.remove('active');
+            }
+        });
+
+        // Filter functionality
+        document.querySelectorAll('.filter-option input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                console.log('Filter changed:', this.nextElementSibling.nextElementSibling.textContent);
+                // Add your filter logic here
+            });
+        });
+
+        // Color swatch selection
+        document.querySelectorAll('.color-swatch').forEach(swatch => {
+            swatch.addEventListener('click', function() {
+                document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+                this.classList.add('active');
+                console.log('Color selected:', this.style.background);
+                // Add your color filter logic here
+            });
+        });
+
+        // Product card click
+        document.querySelectorAll('.product-card').forEach(card => {
+            card.addEventListener('click', function() {
+                console.log('Product clicked:', this.querySelector('.product-name').textContent);
+                // Add your product detail navigation here
+            });
+        });
+
+        // Pagination
+        document.querySelectorAll('.page-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (!this.textContent.includes('⏮') && !this.textContent.includes('⏭') && !this.textContent.includes('...')) {
+                    document.querySelectorAll('.page-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    console.log('Page changed to:', this.textContent);
+                    // Add your pagination logic here
+                }
+            });
+        });
+    </script>
+</body>
+</html>
