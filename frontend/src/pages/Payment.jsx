@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
@@ -8,13 +8,38 @@ import './Payment.css';
 
 const Payment = () => {
     const navigate = useNavigate();
+    const { orderId } = useParams(); // Get order ID from URL if paying for existing order
     const { user, logout } = useAuth();
     const { cartItems, getCartTotal, getCartCount, clearCart, rentalPeriod } = useCart();
     const { wishlist } = useWishlist();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [saveDetails, setSaveDetails] = useState(false);
+    const [order, setOrder] = useState(null);
+    const [loading, setLoading] = useState(false);
 
     const displayName = user?.name || 'User';
+
+    // If orderId is present, fetch the order details
+    useEffect(() => {
+        if (orderId) {
+            fetchOrderDetails();
+        }
+    }, [orderId]);
+
+    const fetchOrderDetails = async () => {
+        try {
+            setLoading(true);
+            const response = await api.get(`/orders/${orderId}`);
+            if (response.data.success) {
+                setOrder(response.data.data);
+            }
+        } catch (error) {
+            console.error('Failed to fetch order:', error);
+            alert('Failed to load order details');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleLogout = () => {
         logout();
@@ -29,21 +54,31 @@ const Payment = () => {
         e.preventDefault();
 
         try {
-            // Create Order in Backend
-            const response = await api.post('/orders', {
-                items: cartItems,
-                total: getCartTotal()
-            });
+            if (orderId) {
+                // Paying for existing order
+                const response = await api.post(`/orders/${orderId}/pay`);
 
-            if (response.data.success) {
-                // Simulate payment processing delay if needed, or just proceed
-                setTimeout(() => {
-                    clearCart();
-                    // Pass the created order details to the success page if needed, or just the ID
-                    navigate('/order-success', { state: { order: response.data.data } });
-                }, 1500);
+                if (response.data.success) {
+                    alert('Payment successful!');
+                    navigate(`/customer/orders/${orderId}`);
+                } else {
+                    alert('Payment failed: ' + response.data.message);
+                }
             } else {
-                alert('Order creation failed: ' + response.data.message);
+                // Create Order from Cart
+                const response = await api.post('/orders', {
+                    items: cartItems,
+                    total: getCartTotal()
+                });
+
+                if (response.data.success) {
+                    setTimeout(() => {
+                        clearCart();
+                        navigate('/order-success', { state: { order: response.data.data } });
+                    }, 1500);
+                } else {
+                    alert('Order creation failed: ' + response.data.message);
+                }
             }
         } catch (error) {
             console.error('Payment Error:', error);
@@ -183,7 +218,7 @@ const Payment = () => {
                         </div>
 
                         <button type="submit" className="btn btn-pay-now" style={{ width: '100%', marginTop: '1rem' }}>
-                            Pay R{getCartTotal().toFixed(2)}
+                            {orderId ? `Pay Invoice (Rs ${order?.totalAmount?.toFixed(2) || '0.00'})` : `Confirm Quotation (R${getCartTotal().toFixed(2)})`}
                         </button>
                     </form>
                 </div>
@@ -191,37 +226,34 @@ const Payment = () => {
                 {/* Summary Sidebar */}
                 <div className="summary-sidebar">
                     <div className="summary-box">
-                        {/* Product Preview - Showing top items */}
-                        {cartItems.slice(0, 3).map((item) => (
-                            <div key={item.id} className="product-preview">
+                        {/* Product Preview - Showing order items if paying invoice, otherwise cart items */}
+                        {(orderId ? order?.items : cartItems)?.slice(0, 3).map((item, idx) => (
+                            <div key={item.id || idx} className="product-preview">
                                 <div className="product-image">
-                                    {item.imageUrl && !item.imageUrl.startsWith('data') ? (
+                                    {item.product?.imageUrl && !item.product.imageUrl.startsWith('data') ? (
+                                        <img src={item.product.imageUrl} alt={item.product.name} />
+                                    ) : item.imageUrl && !item.imageUrl.startsWith('data') ? (
                                         <img src={item.imageUrl} alt={item.name} />
                                     ) : (
                                         '📦'
                                     )}
                                 </div>
                                 <div className="product-info">
-                                    <h3>{item.name}</h3>
-                                    <div className="product-price">R{item.price} x {item.quantity}</div>
+                                    <h3>{item.product?.name || item.name}</h3>
+                                    <div className="product-price">Rs {item.price} x {item.quantity}</div>
+                                    {(item.startDate || item.endDate) && (
+                                        <div style={{ fontSize: '0.75rem', color: 'var(--accent)', marginTop: '0.2rem' }}>
+                                            📅 {item.startDate ? new Date(item.startDate).toLocaleDateString('en-IN') : ''} → {item.endDate ? new Date(item.endDate).toLocaleDateString('en-IN') : ''}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         ))}
-                        {cartItems.length > 3 && (
+                        {(orderId ? order?.items?.length : cartItems.length) > 3 && (
                             <div style={{ textAlign: 'center', color: 'var(--text-muted)', marginBottom: '1rem' }}>
-                                + {cartItems.length - 3} more items
+                                + {(orderId ? order.items.length : cartItems.length) - 3} more items
                             </div>
                         )}
-
-                        {/* Rental Period */}
-                        <div style={{ marginBottom: '1.5rem', marginTop: '1rem' }}>
-                            <div style={{ color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Rental Period</div>
-                            <div>
-                                {rentalPeriod?.startDate ? `${rentalPeriod.startDate} ${rentalPeriod.startTime}` : 'Not selected'}
-                                {' to '}
-                                {rentalPeriod?.endDate ? `${rentalPeriod.endDate} ${rentalPeriod.endTime}` : 'Not selected'}
-                            </div>
-                        </div>
 
                         {/* Summary */}
                         <div className="summary-row">
@@ -230,15 +262,23 @@ const Payment = () => {
                         </div>
                         <div className="summary-row">
                             <span>Sub Total</span>
-                            <span>R{getCartTotal().toFixed(2)}</span>
+                            <span>Rs {orderId ? (order?.totalAmount / 1.18)?.toFixed(2) || '0.00' : getCartTotal().toFixed(2)}</span>
                         </div>
+                        {orderId && (
+                            <div className="summary-row">
+                                <span>Tax (18%)</span>
+                                <span>Rs {(order?.totalAmount - (order?.totalAmount / 1.18))?.toFixed(2) || '0.00'}</span>
+                            </div>
+                        )}
                         <div className="summary-row total">
                             <span>Total</span>
-                            <span>R{getCartTotal().toFixed(2)}</span>
+                            <span>Rs {orderId ? order?.totalAmount?.toFixed(2) || '0.00' : getCartTotal().toFixed(2)}</span>
                         </div>
 
                         {/* Back Button */}
-                        <button className="btn btn-back" style={{ marginTop: '1rem', width: '100%' }} onClick={() => navigate('/cart')}>‹ Back to Cart</button>
+                        <button className="btn btn-back" style={{ marginTop: '1rem', width: '100%' }} onClick={() => navigate(orderId ? `/customer/orders/${orderId}` : '/cart')}>
+                            ‹ Back to {orderId ? 'Order' : 'Cart'}
+                        </button>
                     </div>
                 </div>
             </div>

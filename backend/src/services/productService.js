@@ -11,6 +11,9 @@ async function listProducts(filters = {}) {
     if (brand && String(brand).trim()) {
         where.brand = { equals: String(brand).trim(), mode: 'insensitive' };
     }
+    if (filters.vendorId) {
+        where.vendorId = filters.vendorId;
+    }
     if (color && String(color).trim()) {
         where.color = { equals: String(color).trim(), mode: 'insensitive' };
     }
@@ -81,7 +84,116 @@ async function getProductById(id) {
     };
 }
 
+const checkAvailability = async (productId, startDate, endDate) => {
+    const product = await prisma.product.findUnique({ where: { id: productId } });
+    if (!product) throw new Error('Product not found');
+
+    // Find all confirmed orders (SALES_ORDER, CONFIRMED, PAID, PICKED_UP)
+    // that overlap with the requested period.
+    // Overlap: (RequestedStart <= ExistingEnd) AND (RequestedEnd >= ExistingStart)
+    const overlappingItems = await prisma.orderItem.findMany({
+        where: {
+            productId,
+            order: {
+                status: {
+                    in: ['SALES_ORDER', 'CONFIRMED', 'PAID', 'PICKED_UP']
+                }
+            },
+            AND: [
+                { startDate: { lte: new Date(endDate) } },
+                { endDate: { gte: new Date(startDate) } }
+            ]
+        }
+    });
+
+    const reservedQuantity = overlappingItems.reduce((sum, item) => sum + item.quantity, 0);
+    const availableQuantity = Math.max(0, product.stock - reservedQuantity);
+
+    return {
+        available: availableQuantity,  // Return quantity, not boolean
+        totalStock: product.stock,
+        reserved: reservedQuantity
+    };
+};
+
+const createProduct = async (data) => {
+    // Handle variants if passed (not fully implemented in frontend yet but good for backend)
+    // data.attributes is passing as JSON
+
+    // Map frontend priceUnit to DurationType enum
+    let durationType = 'DAY';
+    if (data.priceUnit) {
+        const unit = data.priceUnit.toLowerCase();
+        if (unit.includes('hour')) durationType = 'HOUR';
+        else if (unit.includes('day')) durationType = 'DAY';
+        else if (unit.includes('week')) durationType = 'WEEK';
+        else if (unit.includes('month')) durationType = 'MONTH';
+        else if (unit.includes('year')) durationType = 'YEAR';
+    }
+
+    const product = await prisma.product.create({
+        data: {
+            name: data.name,
+            category: data.category,
+            brand: data.brand || 'Generic',
+            color: data.color || 'Generic',
+            description: data.description,
+            price: data.price,
+            costPrice: data.costPrice,
+            productType: data.productType,
+            stock: data.stock || data.quantityOnHand,
+            quantityOnHand: data.quantityOnHand,
+            durationType: durationType,
+            imageUrl: data.imageUrl,
+            vendorId: data.vendorId,
+            isPublished: data.isPublished,
+            attributes: data.attributes ? data.attributes : undefined
+        }
+    });
+    return product;
+};
+
+const updateProduct = async (id, data) => {
+    const product = await prisma.product.findUnique({ where: { id } });
+    if (!product) throw new Error('Product not found');
+
+    // Map frontend priceUnit to DurationType enum
+    let durationType = product.durationType; // Keep existing if not provided
+    if (data.priceUnit) {
+        const unit = data.priceUnit.toLowerCase();
+        if (unit.includes('hour')) durationType = 'HOUR';
+        else if (unit.includes('day')) durationType = 'DAY';
+        else if (unit.includes('week')) durationType = 'WEEK';
+        else if (unit.includes('month')) durationType = 'MONTH';
+        else if (unit.includes('year')) durationType = 'YEAR';
+    }
+
+    const updatedProduct = await prisma.product.update({
+        where: { id },
+        data: {
+            name: data.name,
+            category: data.category,
+            brand: data.brand,
+            color: data.color,
+            description: data.description,
+            price: data.price,
+            costPrice: data.costPrice,
+            productType: data.productType,
+            stock: data.stock || data.quantityOnHand,
+            quantityOnHand: data.quantityOnHand,
+            durationType: durationType,
+            imageUrl: data.imageUrl,
+            isPublished: data.isPublished,
+            attributes: data.attributes ? data.attributes : undefined
+        }
+    });
+    return updatedProduct;
+};
+
 module.exports = {
     listProducts,
     getProductById,
+    checkAvailability,
+    createProduct,
+    updateProduct
 };

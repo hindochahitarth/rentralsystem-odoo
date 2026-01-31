@@ -11,7 +11,7 @@ const getCart = async (req, res) => {
 
 const addToCart = async (req, res) => {
     try {
-        const { productId, quantity, selectedVariants } = req.body;
+        const { productId, quantity, selectedVariants, startDate, endDate } = req.body;
         if (!productId) {
             return res.status(400).json({ success: false, message: 'productId is required' });
         }
@@ -19,6 +19,8 @@ const addToCart = async (req, res) => {
             productId,
             quantity: quantity || 1,
             selectedVariants: selectedVariants || {},
+            startDate,
+            endDate
         });
         res.status(200).json({ success: true, data: cart, message: 'Item added to cart' });
     } catch (error) {

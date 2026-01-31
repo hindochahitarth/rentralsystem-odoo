@@ -3,6 +3,8 @@ import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
+import RentalPeriodSelector from '../components/RentalPeriodSelector';
+import AvailabilityChecker from '../components/AvailabilityChecker';
 import api from '../api/client';
 import './ProductDetail.css';
 
@@ -22,6 +24,10 @@ const ProductDetail = () => {
     const [showModal, setShowModal] = useState(false);
     const [addLoading, setAddLoading] = useState(false);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+    // Default dates (optional: set tomorrow as start)
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState('');
 
     const selectedVariants = {};
     const variantGroups = product?.variants?.reduce((acc, v) => {
@@ -108,7 +114,7 @@ const ProductDetail = () => {
             return;
         }
         setAddLoading(true);
-        const result = await addToCart(product.id, quantity, hasVariants ? selectedVariantState : {});
+        const result = await addToCart(product.id, quantity, hasVariants ? selectedVariantState : {}, startDate, endDate);
         setAddLoading(false);
         if (result.success) {
             if (showModal) setShowModal(false);
@@ -199,6 +205,22 @@ const ProductDetail = () => {
                         {product.description && <p className="price-subtitle" style={{ marginTop: '0.5rem' }}>{product.description}</p>}
                     </div>
                     <div className="rental-period">
+                        <RentalPeriodSelector
+                            initialStart={startDate}
+                            initialEnd={endDate}
+                            onPeriodChange={({ startDate: newStart, endDate: newEnd }) => {
+                                setStartDate(newStart);
+                                setEndDate(newEnd);
+                            }}
+                        />
+
+                        <AvailabilityChecker
+                            productId={product.id}
+                            quantity={quantity}
+                            startDate={startDate}
+                            endDate={endDate}
+                        />
+
                         <label className="period-label">Quantity</label>
                         <div className="action-buttons">
                             <div className="quantity-control">

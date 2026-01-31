@@ -1,18 +1,61 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import api from '../api/client';
 import './VendorInvoice.css';
 
 const VendorInvoice = () => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
     const { id } = useParams();
-    const [status, setStatus] = useState('Posted');
+    const [invoice, setInvoice] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        const fetchInvoice = async () => {
+            try {
+                // 'id' param from URL might be an InvoiceID or OrderID.
+                // Our backend endpoint /invoice/:id handles this logic (as per controller plan).
+                const res = await api.get(`/invoice/${id}`);
+                if (res.data.success) {
+                    setInvoice(res.data.data);
+                }
+            } catch (err) {
+                console.error("Fetch Invoice Error", err);
+                setError("Invoice not found or failed to load");
+            } finally {
+                setLoading(false);
+            }
+        };
+        if (id) fetchInvoice();
+    }, [id]);
 
     const handleLogout = () => {
         logout();
         navigate('/', { replace: true });
     };
+
+    const handleVoid = async () => {
+        if (!window.confirm("Are you sure you want to void this invoice?")) return;
+        try {
+            const res = await api.patch(`/invoice/${invoice.id}/void`);
+            if (res.data.success) {
+                setInvoice(prev => ({ ...prev, status: 'VOID' }));
+                alert("Invoice Voided.");
+            }
+        } catch (err) {
+            alert("Failed to void invoice.");
+        }
+    };
+
+    if (loading) return <div className="p-8 text-white">Loading Invoice...</div>;
+    if (error) return <div className="p-8 text-red-500">{error}</div>;
+    if (!invoice) return null;
+
+    const order = invoice.order || {};
+    const customer = order.user || {};
+    const items = order.items || [];
 
     return (
         <div className="vendor-invoice-page">
@@ -25,7 +68,7 @@ const VendorInvoice = () => {
                         </Link>
                         <div className="nav-tabs">
                             <Link to="/dashboard" className="nav-tab" style={{ textDecoration: 'none' }}>Dashboard</Link>
-                            <Link to="/orders" className="nav-tab active" style={{ textDecoration: 'none' }}>Orders</Link>
+                            <Link to="/vendor/orders" className="nav-tab active" style={{ textDecoration: 'none' }}>Orders</Link>
                             <button className="nav-tab">Products</button>
                             <button className="nav-tab">Reports</button>
                             <button className="nav-tab">Settings</button>
@@ -50,7 +93,7 @@ const VendorInvoice = () => {
                     <div className="header-left-flex">
                         <div className="page-title-italic">Invoice Page</div>
                         <div className="order-badges">
-                            <div className="badge-item badge-gradient">New</div>
+                            <div className="badge-item badge-gradient">{order.orderNumber}</div>
                             <div className="toggle-indicators">
                                 <div className="toggle-box green">✓</div>
                                 <div className="toggle-box red">✕</div>
@@ -59,52 +102,48 @@ const VendorInvoice = () => {
                     </div>
                     <div className="header-actions-flex">
                         <button className="btn-gradient">Send</button>
-                        <button className="btn-outline-header">Confirm</button>
                         <button className="btn-outline-header">Print</button>
+                        {invoice.status !== 'VOID' && invoice.status !== 'PAID' && (
+                            <button className="btn-outline-header" style={{ borderColor: 'red', color: 'red' }} onClick={handleVoid}>Void</button>
+                        )}
                     </div>
                 </div>
 
                 <div className="invoice-status-pill">
-                    <div className={`status-label ${status === 'Draft' ? 'active' : ''}`}>Draft</div>
-                    <div className={`status-label ${status === 'Posted' ? 'active' : ''}`}>Posted</div>
+                    <div className={`status-label ${invoice.status === 'UNPAID' ? 'active' : ''}`}>Unpaid</div>
+                    <div className={`status-label ${invoice.status === 'PAID' ? 'active' : ''}`}>Paid</div>
+                    {invoice.status === 'VOID' && <div className="status-label active" style={{ background: 'red' }}>Void</div>}
                 </div>
             </div>
 
             {/* Main Content */}
             <main className="invoice-main">
-                <h1 className="invoice-ref-number">{id || 'INV/2026/0001'}</h1>
+                <h1 className="invoice-ref-number">#{invoice.id.slice(0, 8)}</h1>
 
                 <div className="invoice-form-grid">
                     <div className="input-group-flex">
                         <label className="label-muted">Customer</label>
-                        <input type="text" className="input-field-dark" value="Smith" readOnly />
+                        <input type="text" className="input-field-dark" value={customer.name || 'Unknown'} readOnly />
+                    </div>
+                    <div className="input-group-flex">
+                        <label className="label-muted">Email</label>
+                        <input type="text" className="input-field-dark" value={customer.email || ''} readOnly />
                     </div>
                     <div className="input-group-flex">
                         <label className="label-muted">Invoice Address</label>
-                        <input type="text" className="input-field-dark" value="123 Rental Ave, Tech City" readOnly />
-                    </div>
-                    <div className="input-group-flex">
-                        <label className="label-muted">Delivery Address</label>
-                        <input type="text" className="input-field-dark" value="123 Rental Ave, Tech City" readOnly />
+                        <input type="text" className="input-field-dark" value={customer.address || ''} readOnly />
                     </div>
                     <div className="input-group-flex">
                         <label className="label-muted">Invoice date</label>
-                        <input type="date" className="input-field-dark" defaultValue="2026-01-31" readOnly />
+                        <input type="date" className="input-field-dark" value={new Date(invoice.createdAt).toISOString().split('T')[0]} readOnly />
                     </div>
                 </div>
 
                 <div className="invoice-rental-period">
-                    <label className="label-muted" style={{ display: 'block', marginBottom: '1rem' }}>Rental Period</label>
+                    <label className="label-muted" style={{ display: 'block', marginBottom: '1rem' }}>Rental Information</label>
                     <div className="invoice-date-grid">
-                        <input type="text" className="input-field-dark" value="2026-02-01" readOnly />
-                        <div className="arrow-divider">→</div>
-                        <input type="text" className="input-field-dark" value="2026-02-28" readOnly />
+                        <div style={{ color: '#aaa' }}>Order Ref: {order.orderNumber}</div>
                     </div>
-                </div>
-
-                <div className="input-group-flex" style={{ maxWidth: '300px', marginBottom: '3rem' }}>
-                    <label className="label-muted">Due Date</label>
-                    <input type="text" className="input-field-dark" value="2026-03-15" readOnly />
                 </div>
 
                 <div className="invoice-lines-card">
@@ -114,39 +153,26 @@ const VendorInvoice = () => {
                             <tr>
                                 <th>Product</th>
                                 <th>Quantity</th>
-                                <th>Unit</th>
                                 <th>Unit Price</th>
-                                <th>Taxes</th>
                                 <th>Amount</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>
-                                    <div className="product-info-wrap">
-                                        <div className="name">Computers</div>
-                                        <div className="period">[2026-02-01 → 2026-02-28]</div>
-                                        <div className="note">Downpayment: Rs 20,000</div>
-                                    </div>
-                                </td>
-                                <td>20</td>
-                                <td>Units</td>
-                                <td>Rs 20,000</td>
-                                <td>—</td>
-                                <td>Rs 4,00,000</td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div className="product-info-wrap">
-                                        <div className="name">Downpayment</div>
-                                    </div>
-                                </td>
-                                <td>20</td>
-                                <td>Units</td>
-                                <td>—</td>
-                                <td>—</td>
-                                <td>—</td>
-                            </tr>
+                            {items.map((item) => (
+                                <tr key={item.id}>
+                                    <td>
+                                        <div className="product-info-wrap">
+                                            <div className="name">{item.product?.name || 'Item'}</div>
+                                            {item.startDate && (
+                                                <div className="period">[{new Date(item.startDate).toLocaleDateString()} → {new Date(item.endDate).toLocaleDateString()}]</div>
+                                            )}
+                                        </div>
+                                    </td>
+                                    <td>{item.quantity}</td>
+                                    <td>Rs {item.price}</td>
+                                    <td>Rs {(Number(item.quantity) * Number(item.price)).toFixed(2)}</td>
+                                </tr>
+                            ))}
                         </tbody>
                     </table>
                 </div>
@@ -160,17 +186,11 @@ const VendorInvoice = () => {
                     <div className="invoice-totals-box">
                         <div className="invoice-total-row">
                             <span>Untaxed Amount:</span>
-                            <span>Rs 4,00,000</span>
+                            <span>Rs {Number(invoice.amount).toFixed(2)}</span>
                         </div>
                         <div className="invoice-total-row big">
                             <span>Total:</span>
-                            <span>Rs 4,00,000</span>
-                        </div>
-
-                        <div className="final-action-btns">
-                            <button className="btn-sub-action">Register Sale</button>
-                            <button className="btn-sub-action">Discount</button>
-                            <button className="btn-sub-action">Add Shipping</button>
+                            <span>Rs {Number(invoice.amount).toFixed(2)}</span>
                         </div>
                     </div>
                 </div>

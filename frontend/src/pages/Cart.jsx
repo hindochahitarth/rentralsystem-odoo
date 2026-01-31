@@ -137,6 +137,12 @@ const Cart = () => {
                                             {item.selectedVariants && Object.keys(item.selectedVariants).length > 0 && (
                                                 <div className="item-meta">
                                                     {Object.entries(item.selectedVariants).map(([k, v]) => `${k}: ${v}`).join(', ')}
+                                                    {Object.entries(item.selectedVariants).map(([k, v]) => `${k}: ${v}`).join(', ')}
+                                                </div>
+                                            )}
+                                            {(item.startDate || item.endDate) && (
+                                                <div className="item-meta" style={{ marginTop: '0.25rem', color: 'var(--accent)' }}>
+                                                    📅 {item.startDate ? item.startDate.split('T')[0] : ''} to {item.endDate ? item.endDate.split('T')[0] : ''}
                                                 </div>
                                             )}
                                         </div>
@@ -158,40 +164,6 @@ const Cart = () => {
                 </div>
 
                 <div className="summary-sidebar">
-                    <div className="summary-box">
-                        <div className="rental-period-box">
-                            <h3>Rental Period</h3>
-                            <div className="date-time-group">
-                                <input
-                                    type="date"
-                                    className="date-time-input"
-                                    value={rentalPeriod.startDate}
-                                    onChange={(e) => setRentalPeriod({ ...rentalPeriod, startDate: e.target.value })}
-                                />
-                                <input
-                                    type="time"
-                                    className="date-time-input"
-                                    value={rentalPeriod.startTime}
-                                    onChange={(e) => setRentalPeriod({ ...rentalPeriod, startTime: e.target.value })}
-                                />
-                            </div>
-                            <div className="date-time-group" style={{ marginTop: '0.5rem' }}>
-                                <input
-                                    type="date"
-                                    className="date-time-input"
-                                    value={rentalPeriod.endDate}
-                                    min={rentalPeriod.startDate}
-                                    onChange={(e) => setRentalPeriod({ ...rentalPeriod, endDate: e.target.value })}
-                                />
-                                <input
-                                    type="time"
-                                    className="date-time-input"
-                                    value={rentalPeriod.endTime}
-                                    onChange={(e) => setRentalPeriod({ ...rentalPeriod, endTime: e.target.value })}
-                                />
-                            </div>
-                        </div>
-                    </div>
 
                     <div className="summary-row">
                         <span>Sub Total</span>
@@ -229,7 +201,7 @@ const Cart = () => {
 
                     <div className="action-buttons">
                         <button type="button" className="btn btn-secondary">Pay with Saved Card</button>
-                        <button type="button" className="btn btn-checkout" onClick={() => navigate('/payment')}>Checkout</button>
+                        <button type="button" className="btn btn-checkout" onClick={() => navigate('/address')}>Checkout</button>
                     </div>
                 </div>
             </div>

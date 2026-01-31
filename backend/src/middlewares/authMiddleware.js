@@ -47,4 +47,30 @@ const authorize = (...roles) => {
     };
 };
 
-module.exports = { protect, authorize };
+/**
+ * Middleware to require VENDOR or ADMIN role
+ */
+const requireVendor = (req, res, next) => {
+    if (req.user.role !== 'VENDOR' && req.user.role !== 'ADMIN') {
+        return res.status(403).json({
+            success: false,
+            message: 'This action requires VENDOR or ADMIN role'
+        });
+    }
+    next();
+};
+
+/**
+ * Middleware to require CUSTOMER role
+ */
+const requireCustomer = (req, res, next) => {
+    if (req.user.role !== 'CUSTOMER') {
+        return res.status(403).json({
+            success: false,
+            message: 'This action is only available to CUSTOMER role'
+        });
+    }
+    next();
+};
+
+module.exports = { protect, authorize, requireVendor, requireCustomer };
