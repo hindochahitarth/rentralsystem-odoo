@@ -366,6 +366,30 @@ body {
 /* Price Range Filter */
 .price-range {
   margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.price-range .price-input {
+  width: 90px;
+  padding: 0.5rem 0.75rem;
+  background: var(--surface-light);
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 0.95rem;
+}
+
+.price-range .price-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.filter-option input[type="radio"] {
+  margin-right: 0.5rem;
+  accent-color: var(--accent);
 }
 
 .range-slider {

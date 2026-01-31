@@ -1,8 +1,9 @@
 const prisma = require('../config/db');
 const { hashPassword, comparePassword, generateToken, generateResetToken, verifyToken } = require('../utils/auth');
+const couponService = require('./couponService');
 
 const signup = async (userData) => {
-    const { name, email, companyName, gstin, password, role, vendorCategory } = userData;
+    const { name, email, companyName, gstin, password, role, vendorCategory, couponCode } = userData;
     const normalizedEmail = String(email || '').trim().toLowerCase();
     if (!normalizedEmail) throw new Error('Email is required');
     if (!password || typeof password !== 'string' || password.trim() === '') {
@@ -12,6 +13,11 @@ const signup = async (userData) => {
     const existingUser = await prisma.user.findUnique({ where: { email: normalizedEmail } });
     if (existingUser) {
         throw new Error('User already exists with this email');
+    }
+
+    const isCustomerWithCoupon = role === 'CUSTOMER' && couponCode && String(couponCode).trim();
+    if (isCustomerWithCoupon) {
+        await couponService.validateCoupon(couponCode.trim());
     }
 
     const hashedPassword = await hashPassword(password);
@@ -28,10 +34,16 @@ const signup = async (userData) => {
         },
     });
 
+    let couponApplied = false;
+    if (isCustomerWithCoupon) {
+        await couponService.applyCoupon(couponCode.trim(), user.id);
+        couponApplied = true;
+    }
+
     const token = generateToken(user.id, user.role);
 
     const { password: _, ...userWithoutPassword } = user;
-    return { user: userWithoutPassword, token };
+    return { user: userWithoutPassword, token, couponApplied };
 };
 
 const login = async (email, password) => {

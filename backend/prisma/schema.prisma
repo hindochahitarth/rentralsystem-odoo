@@ -27,4 +27,102 @@ model User {
   vendorCategory  String?  // Electronics, Furniture, etc.
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+  couponUsages    CouponUsage[]
+  cart            Cart?
+  orders          Order[]
+}
+
+enum DurationType {
+  HOUR
+  DAY
+  WEEK
+  MONTH
+  YEAR
+}
+
+model Product {
+  id            String         @id @default(uuid())
+  name          String
+  category      String
+  brand         String
+  color         String
+  description   String?
+  price         Decimal        @db.Decimal(10, 2)
+  durationType  DurationType
+  stock         Int            @default(0)
+  imageUrl      String?
+  createdAt     DateTime      @default(now())
+  variants      ProductVariant[]
+  cartItems     CartItem[]
+  orderItems    OrderItem[]
+}
+
+model ProductVariant {
+  id         String   @id @default(uuid())
+  productId  String
+  optionName String
+  optionValue String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model Cart {
+  id        String     @id @default(uuid())
+  userId    String     @unique
+  createdAt DateTime   @default(now())
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items           CartItem[]
+  couponCode      String?
+  discountPercent Int        @default(0)
+}
+
+model CartItem {
+  id                String   @id @default(uuid())
+  cartId            String
+  productId         String
+  quantity          Int      @default(1)
+  selectedVariants  Json?    // { "optionName": "optionValue", ... }
+  cart              Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product           Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model Coupon {
+  id          String        @id @default(uuid())
+  code        String        @unique
+  discount    Int           // percentage (e.g. 10 = 10% off)
+  isActive    Boolean       @default(true)
+  expiresAt   DateTime
+  usageLimit  Int
+  usedCount   Int           @default(0)
+  usages      CouponUsage[]
+}
+
+model CouponUsage {
+  id        String   @id @default(uuid())
+  couponId  String
+  userId    String
+  usedAt    DateTime @default(now())
+  coupon    Coupon   @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Order {
+  id            String      @id @default(uuid())
+  orderNumber   String      @unique @default(cuid()) // SO00010 style can be generated or use CUID
+  userId        String
+  user          User        @relation(fields: [userId], references: [id])
+  totalAmount   Decimal     @db.Decimal(10, 2)
+  status        String      @default("PAID")
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  items         OrderItem[]
+}
+
+model OrderItem {
+  id        String   @id @default(uuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  quantity  Int
+  price     Decimal  @db.Decimal(10, 2)
 }
