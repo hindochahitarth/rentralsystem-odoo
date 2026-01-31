@@ -43,14 +43,18 @@ function formatCart(cart) {
         },
     }));
     const subtotal = items.reduce((sum, i) => sum + Number(i.product.price) * i.quantity, 0);
+    const discountPercent = cart.discountPercent || 0;
+    const discountAmount = (subtotal * discountPercent) / 100;
+    const total = Math.max(0, subtotal - discountAmount);
+
     return {
         id: cart.id,
         userId: cart.userId,
         items,
-        subtotal,
-        discountPercent: 0,
-        discountAmount: 0,
-        total: subtotal,
+        discountPercent,
+        discountAmount,
+        couponCode: cart.couponCode,
+        total,
     };
 }
 
@@ -141,15 +145,18 @@ async function applyCouponToCart(userId, code) {
     const couponResult = await couponService.validateCoupon(code);
     const discountPercent = couponResult.coupon.discount;
     const cart = await getOrCreateCart(userId);
-    const discountAmount = (cart.subtotal * discountPercent) / 100;
-    const total = Math.max(0, cart.subtotal - discountAmount);
-    return {
-        ...cart,
-        discountPercent,
-        discountAmount,
-        total,
-        couponCode: couponResult.coupon.code,
-    };
+
+    // Save to DB
+    await prisma.cart.update({
+        where: { id: cart.id },
+        data: {
+            couponCode: couponResult.coupon.code,
+            discountPercent: discountPercent
+        }
+    });
+
+    // Re-fetch formatted
+    return getOrCreateCart(userId);
 }
 
 module.exports = {

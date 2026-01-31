@@ -229,7 +229,7 @@ const Cart = () => {
 
                     <div className="action-buttons">
                         <button type="button" className="btn btn-secondary">Pay with Saved Card</button>
-                        <button type="button" className="btn btn-checkout" onClick={() => navigate('/address')}>Checkout</button>
+                        <button type="button" className="btn btn-checkout" onClick={() => navigate('/payment')}>Checkout</button>
                     </div>
                 </div>
             </div>

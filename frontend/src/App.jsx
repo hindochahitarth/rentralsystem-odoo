@@ -44,7 +44,7 @@ function App() {
                     <WishlistProvider>
                         <div className="w-full min-h-screen bg-gray-50 flex flex-col">
                             <Routes>
-                                <Route path="/" element={<Index />} />
+                                <Route path="/" element={<Login />} />
                                 <Route path="/login" element={<Login />} />
                                 <Route path="/signup" element={<Signup />} />
                                 <Route path="/forgot-password" element={<ForgotPassword />} />
