@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import Logo from '../components/Logo';
 
 const Index = () => {
     const { user, loading } = useAuth();
@@ -15,7 +16,7 @@ const Index = () => {
     return (
         <div className="w-full min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col">
             <header className="py-6 px-6 sm:px-10 flex justify-between items-center">
-                <span className="text-xl font-semibold text-white tracking-tight">Rental System</span>
+                <Logo className="text-white" size="md" showText={true} />
                 <div className="flex gap-3">
                     <Link
                         to="/login"
@@ -58,7 +59,7 @@ const Index = () => {
             </main>
 
             <footer className="py-4 text-center text-sm text-slate-500">
-                Rental System — Odoo-style management
+                RentFlow — Rental management
             </footer>
         </div>
     );

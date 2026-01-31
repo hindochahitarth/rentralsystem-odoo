@@ -29,6 +29,14 @@ const generateToken = (userId, role) => {
     );
 };
 
+const generateResetToken = (userId) => {
+    return jwt.sign(
+        { userId, type: 'reset' },
+        getJwtSecret(),
+        { expiresIn: '15m' } // 15 minutes expiry
+    );
+};
+
 const verifyToken = (token) => {
     return jwt.verify(token, getJwtSecret());
 };
@@ -37,5 +45,6 @@ module.exports = {
     hashPassword,
     comparePassword,
     generateToken,
+    generateResetToken,
     verifyToken,
 };

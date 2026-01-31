@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import Input from '../components/Input';
+import './Signup.css';
 
 const Signup = () => {
     const [formData, setFormData] = useState({
-        name: '',
+        firstName: '',
+        lastName: '',
         email: '',
         companyName: '',
         gstin: '',
@@ -13,6 +14,8 @@ const Signup = () => {
         confirmPassword: '',
         role: 'CUSTOMER',
         vendorCategory: '',
+        terms: false,
+        newsletter: false
     });
 
     const [errors, setErrors] = useState({});
@@ -23,11 +26,10 @@ const Signup = () => {
     const validate = () => {
         const newErrors = {};
 
-        if (!formData.name) newErrors.name = 'Name is required';
+        if (!formData.firstName) newErrors.firstName = 'First Name is required';
+        if (!formData.lastName) newErrors.lastName = 'Last Name is required';
         if (!formData.email) newErrors.email = 'Email is required';
         else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Enter a valid email address';
-
-        // GSTIN is optional in DB; required only for invoicing later
 
         const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[@$!%*?&_])[A-Za-z\d@$!%*?&_]{6,12}$/;
         if (!formData.password) newErrors.password = 'Password is required';
@@ -39,8 +41,15 @@ const Signup = () => {
             newErrors.confirmPassword = 'Passwords do not match';
         }
 
-        if (formData.role === 'VENDOR' && !formData.vendorCategory) {
-            newErrors.vendorCategory = 'Vendor category is required';
+        if (formData.role === 'VENDOR') {
+             if (!formData.vendorCategory) {
+                newErrors.vendorCategory = 'Vendor category is required';
+            }
+             // companyName and gstin are optional in original code, keeping it that way
+        }
+        
+        if (!formData.terms) {
+            newErrors.terms = 'You must agree to the terms';
         }
 
         setErrors(newErrors);
@@ -48,8 +57,20 @@ const Signup = () => {
     };
 
     const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
+        const { name, value, type, checked } = e.target;
+        setFormData((prev) => ({ 
+            ...prev, 
+            [name]: type === 'checkbox' ? checked : value 
+        }));
+        
+        // Clear error when user types
+        if (errors[name]) {
+            setErrors(prev => ({ ...prev, [name]: null }));
+        }
+    };
+
+    const handleRoleSelect = (role) => {
+        setFormData(prev => ({ ...prev, role }));
     };
 
     const handleSubmit = async (e) => {
@@ -57,7 +78,14 @@ const Signup = () => {
         if (!validate()) return;
 
         setLoading(true);
-        const result = await signup(formData);
+        
+        // Combine names for backend
+        const submissionData = {
+            ...formData,
+            name: `${formData.firstName} ${formData.lastName}`.trim(),
+        };
+
+        const result = await signup(submissionData);
         setLoading(false);
 
         if (result.success) {
@@ -68,85 +96,212 @@ const Signup = () => {
     };
 
     return (
-        <div className="w-full flex-1 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50">
-            <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg">
-                <div className="text-center">
-                    <Link to="/" className="text-sm text-gray-500 hover:text-gray-700">← Back to home</Link>
-                </div>
-                <div>
-                    <h2 className="mt-2 text-center text-3xl font-extrabold text-gray-900">Create your account</h2>
-                    <p className="mt-2 text-center text-sm text-gray-600">
-                        Or{' '}
-                        <Link to="/login" className="font-medium text-blue-600 hover:text-blue-500">
-                            sign in to your account
-                        </Link>
-                    </p>
-                </div>
-                <form className="mt-8 space-y-4" onSubmit={handleSubmit}>
+        <div className="signup-body">
+            <div className="bg-pattern"></div>
+
+            <div className="register-container">
+                <div className="register-card">
+                    <div className="logo-section">
+                        <div className="logo">RentFlow</div>
+                    </div>
+
+                    <h1>Create Your Account</h1>
+                    <p className="subtitle">Join thousands of professionals using RentFlow</p>
+
                     {errors.server && (
-                        <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-md text-sm" role="alert">
+                        <div className="server-error">
                             {errors.server}
                         </div>
                     )}
 
-                    <Input label="Name" id="name" name="name" value={formData.name} onChange={handleChange} error={errors.name} />
-                    <Input label="Email address" id="email" name="email" type="email" value={formData.email} onChange={handleChange} error={errors.email} />
-
-                    <div className="grid grid-cols-2 gap-4">
-                        <Input label="Company Name" id="companyName" name="companyName" value={formData.companyName} onChange={handleChange} placeholder="Optional" />
-                        <Input label="GSTIN (optional)" id="gstin" name="gstin" value={formData.gstin} onChange={handleChange} placeholder="For invoicing" />
-                    </div>
-
-                    <div className="mb-4">
-                        <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">Role</label>
-                        <select
-                            id="role"
-                            name="role"
-                            value={formData.role}
-                            onChange={handleChange}
-                            className="input-select w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none cursor-pointer"
-                        >
-                            <option value="CUSTOMER">Customer</option>
-                            <option value="VENDOR">Vendor</option>
-                            <option value="ADMIN">Admin</option>
-                        </select>
-                    </div>
-
-                    {formData.role === 'VENDOR' && (
-                        <div className="mb-4">
-                            <label htmlFor="vendorCategory" className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                            <select
-                                id="vendorCategory"
-                                name="vendorCategory"
-                                value={formData.vendorCategory}
-                                onChange={handleChange}
-                                className="input-select w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none cursor-pointer"
-                            >
-                                <option value="">Select Category</option>
-                                <option value="Electronics">Electronics</option>
-                                <option value="Furniture">Furniture</option>
-                                <option value="Vehicles">Vehicles</option>
-                                <option value="Appliances">Appliances</option>
-                            </select>
-                            {errors.vendorCategory && <p className="mt-1 text-xs text-red-500">{errors.vendorCategory}</p>}
+                    <form onSubmit={handleSubmit} id="registerForm">
+                        <div className="role-selection">
+                            <div className="role-title">I want to:</div>
+                            <div className="role-grid">
+                                <div 
+                                    className={`role-card ${formData.role === 'CUSTOMER' ? 'active' : ''}`}
+                                    onClick={() => handleRoleSelect('CUSTOMER')}
+                                >
+                                    <div className="role-icon">🛒</div>
+                                    <div className="role-name">Rent Equipment</div>
+                                    <div className="role-desc">Browse and rent products</div>
+                                </div>
+                                <div 
+                                    className={`role-card ${formData.role === 'VENDOR' ? 'active' : ''}`}
+                                    onClick={() => handleRoleSelect('VENDOR')}
+                                >
+                                    <div className="role-icon">🏪</div>
+                                    <div className="role-name">List Equipment</div>
+                                    <div className="role-desc">Become a vendor</div>
+                                </div>
+                                <div 
+                                    className={`role-card ${formData.role === 'ADMIN' ? 'active' : ''}`}
+                                    onClick={() => handleRoleSelect('ADMIN')}
+                                >
+                                    <div className="role-icon">⚙️</div>
+                                    <div className="role-name">Manage Platform</div>
+                                    <div className="role-desc">Administrator access</div>
+                                </div>
+                            </div>
                         </div>
-                    )}
 
-                    <div className="grid grid-cols-2 gap-4">
-                        <Input label="Password" id="password" name="password" type="password" value={formData.password} onChange={handleChange} error={errors.password} />
-                        <Input label="Confirm Password" id="confirmPassword" name="confirmPassword" type="password" value={formData.confirmPassword} onChange={handleChange} error={errors.confirmPassword} />
-                    </div>
+                        <div className="form-grid">
+                            <div className="form-group">
+                                <label htmlFor="firstName">First Name</label>
+                                <input 
+                                    type="text" 
+                                    id="firstName" 
+                                    name="firstName" 
+                                    placeholder="John"
+                                    value={formData.firstName}
+                                    onChange={handleChange}
+                                />
+                                {errors.firstName && <div className="error-message">{errors.firstName}</div>}
+                            </div>
 
-                    <div>
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-400 transition-all"
-                        >
-                            {loading ? 'Creating account...' : 'Sign up'}
+                            <div className="form-group">
+                                <label htmlFor="lastName">Last Name</label>
+                                <input 
+                                    type="text" 
+                                    id="lastName" 
+                                    name="lastName" 
+                                    placeholder="Doe"
+                                    value={formData.lastName}
+                                    onChange={handleChange}
+                                />
+                                {errors.lastName && <div className="error-message">{errors.lastName}</div>}
+                            </div>
+
+                            <div className="form-group full-width">
+                                <label htmlFor="email">Email Address</label>
+                                <input 
+                                    type="email" 
+                                    id="email" 
+                                    name="email" 
+                                    placeholder="john.doe@example.com"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                />
+                                {errors.email && <div className="error-message">{errors.email}</div>}
+                            </div>
+
+                            {formData.role === 'VENDOR' && (
+                                <>
+                                    <div className="form-group">
+                                        <label htmlFor="companyName">Company Name</label>
+                                        <input 
+                                            type="text" 
+                                            id="companyName" 
+                                            name="companyName" 
+                                            placeholder="Acme Corp"
+                                            value={formData.companyName}
+                                            onChange={handleChange}
+                                        />
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label htmlFor="gstin">GSTIN (Optional)</label>
+                                        <input 
+                                            type="text" 
+                                            id="gstin" 
+                                            name="gstin" 
+                                            placeholder="22AAAAA0000A1Z5"
+                                            value={formData.gstin}
+                                            onChange={handleChange}
+                                        />
+                                    </div>
+
+                                    <div className="form-group full-width">
+                                        <label htmlFor="vendorCategory">Vendor Category</label>
+                                        <select
+                                            id="vendorCategory"
+                                            name="vendorCategory"
+                                            value={formData.vendorCategory}
+                                            onChange={handleChange}
+                                        >
+                                            <option value="">Select Category</option>
+                                            <option value="Electronics">Electronics</option>
+                                            <option value="Furniture">Furniture</option>
+                                            <option value="Vehicles">Vehicles</option>
+                                            <option value="Appliances">Appliances</option>
+                                        </select>
+                                        {errors.vendorCategory && <div className="error-message">{errors.vendorCategory}</div>}
+                                    </div>
+                                </>
+                            )}
+
+                            <div className="form-group">
+                                <label htmlFor="password">Password</label>
+                                <input 
+                                    type="password" 
+                                    id="password" 
+                                    name="password" 
+                                    placeholder="Create a strong password"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                />
+                                {errors.password && <div className="error-message">{errors.password}</div>}
+                                <ul className="password-requirements">
+                                    <li>At least 8 characters</li>
+                                    <li>Include uppercase and lowercase letters</li>
+                                    <li>Include at least one number</li>
+                                </ul>
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="confirmPassword">Confirm Password</label>
+                                <input 
+                                    type="password" 
+                                    id="confirmPassword" 
+                                    name="confirmPassword" 
+                                    placeholder="Re-enter your password"
+                                    value={formData.confirmPassword}
+                                    onChange={handleChange}
+                                />
+                                {errors.confirmPassword && <div className="error-message">{errors.confirmPassword}</div>}
+                            </div>
+                        </div>
+
+                        <div className="checkbox-group">
+                            <input 
+                                type="checkbox" 
+                                id="terms" 
+                                name="terms" 
+                                checked={formData.terms}
+                                onChange={handleChange}
+                            />
+                            <label htmlFor="terms">
+                                I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+                            </label>
+                        </div>
+                        {errors.terms && <div className="error-message" style={{marginBottom: '1rem'}}>{errors.terms}</div>}
+
+                        <div className="checkbox-group">
+                            <input 
+                                type="checkbox" 
+                                id="newsletter" 
+                                name="newsletter" 
+                                checked={formData.newsletter}
+                                onChange={handleChange}
+                            />
+                            <label htmlFor="newsletter">
+                                Send me updates about new features and products
+                            </label>
+                        </div>
+
+                        <button type="submit" className="btn" disabled={loading}>
+                            {loading ? 'Creating Account...' : 'Create Account'}
                         </button>
-                    </div>
-                </form>
+                    </form>
+
+                    <p className="login-link">
+                        Already have an account? <Link to="/login">Sign in</Link>
+                    </p>
+                </div>
+
+                <div className="back-home">
+                    <Link to="/">← Back to Home</Link>
+                </div>
             </div>
         </div>
     );

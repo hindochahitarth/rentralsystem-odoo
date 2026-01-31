@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import Input from '../components/Input';
+import './Login.css';
 
 const Login = () => {
     const [formData, setFormData] = useState({
         email: '',
         password: '',
+        remember: false,
     });
-
+    const [showPassword, setShowPassword] = useState(false);
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
     const { login } = useAuth();
@@ -17,8 +18,11 @@ const Login = () => {
     const successMessage = location.state?.message;
 
     const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
+        const { name, value, type, checked } = e.target;
+        setFormData((prev) => ({
+            ...prev,
+            [name]: type === 'checkbox' ? checked : value,
+        }));
     };
 
     const handleSubmit = async (e) => {
@@ -42,53 +46,109 @@ const Login = () => {
     };
 
     return (
-        <div className="w-full flex-1 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50">
-            <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg">
-                <div className="text-center">
-                    <Link to="/" className="text-sm text-gray-500 hover:text-gray-700">← Back to home</Link>
-                </div>
-                <div>
-                    <h2 className="mt-2 text-center text-3xl font-extrabold text-gray-900">Sign in to your account</h2>
-                    <p className="mt-2 text-center text-sm text-gray-600">
-                        Or{' '}
-                        <Link to="/signup" className="font-medium text-blue-600 hover:text-blue-500">
-                            create a new account
-                        </Link>
-                    </p>
-                </div>
-                <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        <div className="login-page">
+            <div className="login-bg-pattern" />
+
+            <div className="login-container">
+                <div className="login-card">
+                    <div className="login-logo-section">
+                        <div className="login-logo">RentFlow</div>
+                        <p className="login-logo-subtitle">Professional Equipment Rental</p>
+                    </div>
+
+                    <h1>Welcome Back</h1>
+                    <p className="login-subtitle">Sign in to access your rental dashboard</p>
+
                     {successMessage && (
-                        <div className="p-3 bg-green-50 border border-green-200 text-green-800 rounded-md text-sm">
-                            {successMessage}
-                        </div>
+                        <div className="login-success-message">{successMessage}</div>
                     )}
                     {errors.server && (
-                        <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-md text-sm">{errors.server}</div>
+                        <div className="login-error-message">{errors.server}</div>
                     )}
 
-                    <div className="rounded-md shadow-sm -space-y-px">
-                        <Input label="Email address" id="email" name="email" type="email" value={formData.email} onChange={handleChange} />
-                        <Input label="Password" id="password" name="password" type="password" value={formData.password} onChange={handleChange} />
-                    </div>
+                    <form onSubmit={handleSubmit}>
+                        <div className="login-form-group">
+                            <label htmlFor="email">Email Address</label>
+                            <input
+                                type="email"
+                                id="email"
+                                name="email"
+                                className="login-input"
+                                placeholder="you@example.com"
+                                value={formData.email}
+                                onChange={handleChange}
+                                required
+                            />
+                        </div>
 
-                    <div className="flex items-center justify-between">
-                        <div className="text-sm">
-                            <Link to="/forgot-password" className="font-medium text-blue-600 hover:text-blue-500">
-                                Forgot your password?
+                        <div className="login-form-group">
+                            <label htmlFor="password">Password</label>
+                            <div className="login-input-wrapper">
+                                <input
+                                    type={showPassword ? 'text' : 'password'}
+                                    id="password"
+                                    name="password"
+                                    className="login-input"
+                                    placeholder="Enter your password"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    required
+                                />
+                                <button
+                                    type="button"
+                                    className="login-password-toggle"
+                                    onClick={() => setShowPassword((s) => !s)}
+                                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                >
+                                    {showPassword ? '🙈' : '👁️'}
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="login-form-options">
+                            <div className="login-checkbox-wrapper">
+                                <input
+                                    type="checkbox"
+                                    id="remember"
+                                    name="remember"
+                                    checked={formData.remember}
+                                    onChange={handleChange}
+                                />
+                                <label htmlFor="remember">Remember me</label>
+                            </div>
+                            <Link to="/forgot-password" className="login-forgot-link">
+                                Forgot Password?
                             </Link>
                         </div>
+
+                        <button type="submit" className="login-btn" disabled={loading}>
+                            {loading ? 'Signing in...' : 'Sign In'}
+                        </button>
+                    </form>
+
+                    <div className="login-divider">
+                        <span>or continue with</span>
                     </div>
 
-                    <div>
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-400 transition-all"
-                        >
-                            {loading ? 'Signing in...' : 'Sign in'}
+                    <div className="login-social">
+                        <button type="button" className="login-social-btn" disabled>
+                            <span>🔵</span>
+                            Google
+                        </button>
+                        <button type="button" className="login-social-btn" disabled>
+                            <span>⚫</span>
+                            GitHub
                         </button>
                     </div>
-                </form>
+
+                    <p className="login-signup-link">
+                        Don&apos;t have an account? <Link to="/signup">Sign up for free</Link>
+                    </p>
+                </div>
+
+                <div className="login-back-home">
+                    <Link to="/">← Back to Home</Link>
+                </div>
             </div>
         </div>
     );

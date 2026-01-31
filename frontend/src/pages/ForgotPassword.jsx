@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import Input from '../components/Input';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import './Login.css';
 
 const ForgotPassword = () => {
     const [email, setEmail] = useState('');
     const [message, setMessage] = useState('');
     const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -15,58 +16,71 @@ const ForgotPassword = () => {
             const response = await axios.post('http://localhost:5000/api/auth/forgot-password', { email });
             setMessage(response.data.message);
         } catch (error) {
-            setMessage('An error occurred. Please try again.');
+            const msg = error.response?.data?.message || 'An error occurred. Please try again.';
+            setMessage(msg);
         }
         setLoading(false);
     };
 
     return (
-        <div className="flex-1 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg">
-                <div>
-                    <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">Reset your password</h2>
-                    <p className="mt-2 text-center text-sm text-gray-600">
+        <div className="login-page">
+            <div className="login-bg-pattern" />
+            <div className="login-container">
+                <div className="login-card">
+                    <div className="login-logo-section">
+                        <div className="login-logo">RentFlow</div>
+                        <p className="login-logo-subtitle">Account Recovery</p>
+                    </div>
+
+                    <h1>Forgot Password?</h1>
+                    <p className="login-subtitle">
                         Enter your email and we'll send you a link to reset your password.
                     </p>
-                </div>
 
-                {message ? (
-                    <div className="text-center">
-                        <div className="p-4 bg-green-100 text-green-700 rounded-md mb-6 whitespace-pre-wrap">
-                            {message}
+                    {message ? (
+                        <div className="text-center">
+                            <div className="login-success-message mb-6">
+                                {message}
+                            </div>
+                            <button 
+                                onClick={() => navigate('/login')}
+                                className="login-button bg-surface-light hover:bg-surface border-border"
+                            >
+                                Return to Login
+                            </button>
                         </div>
-                        <Link to="/login" className="text-blue-600 hover:text-blue-500 font-medium">
-                            Back to login
-                        </Link>
-                    </div>
-                ) : (
-                    <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-                        <Input
-                            label="Email address"
-                            id="email"
-                            name="email"
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                        />
+                    ) : (
+                        <form onSubmit={handleSubmit}>
+                            <div className="login-form-group">
+                                <label htmlFor="email">Email Address</label>
+                                <input
+                                    type="email"
+                                    id="email"
+                                    name="email"
+                                    className="login-input"
+                                    placeholder="you@example.com"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    required
+                                />
+                            </div>
 
-                        <div>
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-400 Transition-ALL"
+                                className="login-button"
                             >
-                                {loading ? 'Sending...' : 'Send reset link'}
+                                {loading ? 'Sending...' : 'Send Reset Link'}
                             </button>
-                        </div>
-                        <div className="text-center">
-                            <Link to="/login" className="text-sm text-blue-600 hover:text-blue-500 font-medium">
-                                Back to login
-                            </Link>
-                        </div>
-                    </form>
-                )}
+                            
+                            <div className="text-center mt-6">
+                                <Link to="/login" className="text-accent hover:text-white transition-colors text-sm">
+                                    Back to Login
+                                </Link>
+                            </div>
+                        </form>
+                    )}
+                </div>
             </div>
         </div>
     );

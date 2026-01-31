@@ -1,5 +1,5 @@
 const prisma = require('../config/db');
-const { hashPassword, comparePassword, generateToken } = require('../utils/auth');
+const { hashPassword, comparePassword, generateToken, generateResetToken, verifyToken } = require('../utils/auth');
 
 const signup = async (userData) => {
     const { name, email, companyName, gstin, password, role, vendorCategory } = userData;
@@ -69,8 +69,47 @@ const getMe = async (userId) => {
     return userWithoutPassword;
 };
 
+const forgotPassword = async (email) => {
+    const normalizedEmail = String(email || '').trim().toLowerCase();
+    const user = await prisma.user.findUnique({ where: { email: normalizedEmail } });
+    
+    if (!user) {
+        // We do not throw error to avoid enumerating emails
+        return null;
+    }
+
+    const resetToken = generateResetToken(user.id);
+    return { user, resetToken };
+};
+
+const resetPassword = async (token, newPassword) => {
+    try {
+        const decoded = verifyToken(token);
+        if (decoded.type !== 'reset') {
+            throw new Error('Invalid token type');
+        }
+        
+        const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
+        if (!user) {
+            throw new Error('User not found');
+        }
+
+        const hashedPassword = await hashPassword(newPassword);
+        await prisma.user.update({
+            where: { id: user.id },
+            data: { password: hashedPassword },
+        });
+        
+        return true;
+    } catch (error) {
+        throw new Error('Invalid or expired password reset token');
+    }
+};
+
 module.exports = {
     signup,
     login,
     getMe,
+    forgotPassword,
+    resetPassword,
 };
