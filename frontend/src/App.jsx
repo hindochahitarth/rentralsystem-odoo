@@ -10,10 +10,10 @@ import Dashboard from './pages/Dashboard';
 import VendorDashboard from './pages/VendorDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import Cart from './pages/Cart';
+import ProductDetail from './pages/ProductDetail';
 import Address from './pages/Address';
 import Payment from './pages/Payment';
 import OrderSuccess from './pages/OrderSuccess';
-import ProductDetail from './pages/ProductDetail';
 
 const ProtectedRoute = ({ children }) => {
     const { user, loading } = useAuth();

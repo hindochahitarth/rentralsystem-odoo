@@ -48,8 +48,8 @@ export const AuthProvider = ({ children }) => {
             if (!response.data?.success) {
                 return { success: false, message: response.data?.message || 'Signup failed' };
             }
-            // Don't auto-login: user must sign in on the login page after creating account
-            return { success: true };
+            const couponApplied = response.data?.data?.couponApplied === true;
+            return { success: true, couponApplied };
         } catch (error) {
             const msg = error.response?.data?.message || error.message || 'Signup failed. Check your connection and that the server is running.';
             return { success: false, message: msg };

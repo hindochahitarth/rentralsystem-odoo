@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './Signup.css';
 
+const COUPON_REGEX = /^[A-Z0-9]+$/;
+
 const Signup = () => {
     const [formData, setFormData] = useState({
         firstName: '',
@@ -14,6 +16,7 @@ const Signup = () => {
         confirmPassword: '',
         role: 'CUSTOMER',
         vendorCategory: '',
+        couponCode: '',
         terms: false,
         newsletter: false
     });
@@ -45,7 +48,13 @@ const Signup = () => {
              if (!formData.vendorCategory) {
                 newErrors.vendorCategory = 'Vendor category is required';
             }
-             // companyName and gstin are optional in original code, keeping it that way
+        }
+
+        if (formData.role === 'CUSTOMER' && formData.couponCode?.trim()) {
+            const normalized = formData.couponCode.trim().toUpperCase();
+            if (!COUPON_REGEX.test(normalized)) {
+                newErrors.couponCode = 'Coupon code must be uppercase letters and numbers (e.g. SAVE10, RENT50)';
+            }
         }
         
         if (!formData.terms) {
@@ -79,17 +88,25 @@ const Signup = () => {
 
         setLoading(true);
         
-        // Combine names for backend
         const submissionData = {
             ...formData,
             name: `${formData.firstName} ${formData.lastName}`.trim(),
         };
+        if (formData.role === 'CUSTOMER' && formData.couponCode?.trim()) {
+            submissionData.couponCode = formData.couponCode.trim().toUpperCase();
+        }
+        if (formData.role !== 'CUSTOMER') {
+            delete submissionData.couponCode;
+        }
 
         const result = await signup(submissionData);
         setLoading(false);
 
         if (result.success) {
-            navigate('/login', { state: { message: 'Account created. Please sign in.' } });
+            const message = result.couponApplied
+                ? 'Account created. Coupon applied successfully! Please sign in.'
+                : 'Account created. Please sign in.';
+            navigate('/login', { state: { message, couponApplied: result.couponApplied } });
         } else {
             setErrors({ server: result.message });
         }
@@ -134,14 +151,6 @@ const Signup = () => {
                                     <div className="role-name">List Equipment</div>
                                     <div className="role-desc">Become a vendor</div>
                                 </div>
-                                <div 
-                                    className={`role-card ${formData.role === 'ADMIN' ? 'active' : ''}`}
-                                    onClick={() => handleRoleSelect('ADMIN')}
-                                >
-                                    <div className="role-icon">⚙️</div>
-                                    <div className="role-name">Manage Platform</div>
-                                    <div className="role-desc">Administrator access</div>
-                                </div>
                             </div>
                         </div>
 
@@ -184,6 +193,26 @@ const Signup = () => {
                                 />
                                 {errors.email && <div className="error-message">{errors.email}</div>}
                             </div>
+
+                            {formData.role === 'CUSTOMER' && (
+                                <div className="form-group full-width">
+                                    <label htmlFor="couponCode">Coupon Code (Optional)</label>
+                                    <input 
+                                        type="text" 
+                                        id="couponCode" 
+                                        name="couponCode" 
+                                        placeholder="e.g. SAVE10, RENT50"
+                                        value={formData.couponCode}
+                                        onChange={(e) => {
+                                            const v = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                                            setFormData(prev => ({ ...prev, couponCode: v }));
+                                            if (errors.couponCode) setErrors(prev => ({ ...prev, couponCode: null }));
+                                        }}
+                                        maxLength={20}
+                                    />
+                                    {errors.couponCode && <div className="error-message">{errors.couponCode}</div>}
+                                </div>
+                            )}
 
                             {formData.role === 'VENDOR' && (
                                 <>

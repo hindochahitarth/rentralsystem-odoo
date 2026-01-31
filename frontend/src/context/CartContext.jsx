@@ -1,77 +1,163 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import api from '../api/client';
 
 const CartContext = createContext();
 
-export const useCart = () => {
-    return useContext(CartContext);
-};
+export const useCart = () => useContext(CartContext);
 
 export const CartProvider = ({ children }) => {
-    const [cartItems, setCartItems] = useState(() => {
-        const savedCart = localStorage.getItem('cartItems');
-        return savedCart ? JSON.parse(savedCart) : [];
+    const [cart, setCart] = useState(null);
+    const [cartLoading, setCartLoading] = useState(false);
+    const [rentalPeriod, setRentalPeriod] = useState({
+        startDate: '',
+        startTime: '',
+        endDate: '',
+        endTime: ''
     });
 
-    useEffect(() => {
-        localStorage.setItem('cartItems', JSON.stringify(cartItems));
-    }, [cartItems]);
+    const hasToken = () => !!localStorage.getItem('token');
 
-    const addToCart = (product) => {
-        setCartItems(prevItems => {
-            const existingItem = prevItems.find(item => item.id === product.id);
-            if (existingItem) {
-                return prevItems.map(item =>
-                    item.id === product.id
-                        ? { ...item, quantity: item.quantity + (product.quantity || 1) }
-                        : item
-                );
+    const fetchCart = useCallback(async () => {
+        if (!hasToken()) {
+            setCart(null);
+            return;
+        }
+        setCartLoading(true);
+        try {
+            const res = await api.get('/cart');
+            if (res.data?.success && res.data?.data) {
+                setCart(res.data.data);
+            } else {
+                setCart(null);
             }
-            return [...prevItems, { ...product, quantity: product.quantity || 1 }];
-        });
+        } catch {
+            setCart(null);
+        } finally {
+            setCartLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchCart();
+    }, [fetchCart]);
+
+    const cartItems = cart?.items?.map((item) => ({
+        id: item.id,
+        productId: item.productId,
+        quantity: item.quantity,
+        selectedVariants: item.selectedVariants || {},
+        name: item.product?.name,
+        price: item.product?.price,
+        imageUrl: item.product?.imageUrl,
+        durationType: item.product?.durationType,
+        product: item.product,
+    })) || [];
+
+    const addToCart = async (productOrId, quantity = 1, selectedVariants = {}) => {
+        const productId = typeof productOrId === 'object' && productOrId?.id
+            ? productOrId.id
+            : productOrId;
+        const qty = typeof productOrId === 'object' && typeof productOrId?.quantity === 'number'
+            ? productOrId.quantity
+            : quantity;
+        const variants = typeof productOrId === 'object' && productOrId?.selectedVariants
+            ? productOrId.selectedVariants
+            : selectedVariants;
+
+        if (!hasToken()) {
+            return { success: false, message: 'Please sign in to add to cart' };
+        }
+        try {
+            const res = await api.post('/cart/add', {
+                productId,
+                quantity: qty,
+                selectedVariants: variants && Object.keys(variants).length ? variants : {},
+            });
+            if (res.data?.success && res.data?.data) setCart(res.data.data);
+            return { success: true, data: res.data?.data };
+        } catch (err) {
+            const msg = err.response?.data?.message || err.message || 'Failed to add to cart';
+            return { success: false, message: msg };
+        }
     };
 
-    const removeFromCart = (id) => {
-        setCartItems(prevItems => prevItems.filter(item => item.id !== id));
+    const updateQuantity = async (itemId, changeOrValue) => {
+        if (!hasToken()) return;
+        const item = cartItems.find((i) => i.id === itemId);
+        if (!item) return;
+        const newQty = typeof changeOrValue === 'number' && changeOrValue >= 0
+            ? changeOrValue
+            : Math.max(0, item.quantity + (changeOrValue || 0));
+        try {
+            const res = await api.patch(`/cart/item/${itemId}`, { quantity: newQty });
+            if (res.data?.success && res.data?.data) setCart(res.data.data);
+        } catch (err) {
+            console.error(err.response?.data?.message || err.message);
+        }
     };
 
-    const updateQuantity = (id, change) => {
-        setCartItems(prevItems =>
-            prevItems.map(item => {
-                if (item.id === id) {
-                    const newQuantity = item.quantity + change;
-                    return newQuantity > 0 ? { ...item, quantity: newQuantity } : item;
-                }
-                return item;
-            })
-        );
+    const removeFromCart = async (itemId) => {
+        if (!hasToken()) return;
+        try {
+            const res = await api.delete(`/cart/item/${itemId}`);
+            if (res.data?.success && res.data?.data) setCart(res.data.data);
+        } catch (err) {
+            console.error(err.response?.data?.message || err.message);
+        }
     };
 
-    const clearCart = () => {
-        setCartItems([]);
+    const applyCoupon = async (code) => {
+        if (!hasToken()) return { success: false, message: 'Please sign in' };
+        try {
+            const res = await api.post('/cart/apply-coupon', { code: (code || '').trim() });
+            if (res.data?.success && res.data?.data) {
+                setCart(res.data.data);
+                return { success: true, data: res.data.data };
+            }
+            return { success: false, message: res.data?.message || 'Invalid coupon' };
+        } catch (err) {
+            const msg = err.response?.data?.message || err.message || 'Invalid or expired coupon';
+            return { success: false, message: msg };
+        }
     };
 
-    const getCartCount = () => {
-        return cartItems.reduce((total, item) => total + item.quantity, 0);
-    };
+    const getCartCount = () => cartItems.reduce((total, item) => total + item.quantity, 0);
 
     const getCartTotal = () => {
-        // Assuming price is a string like "R100.00" or number
-        return cartItems.reduce((total, item) => {
-            const price = parseFloat(item.price.toString().replace(/[^0-9.]/g, '')) || 0;
-            return total + price * item.quantity;
-        }, 0);
+        if (cart?.total != null) return Number(cart.total);
+        return cartItems.reduce((sum, i) => sum + (Number(i.price) || 0) * (i.quantity || 0), 0);
     };
 
+    const getSubtotal = () => {
+        if (cart?.subtotal != null) return Number(cart.subtotal);
+        return cartItems.reduce((sum, i) => sum + (Number(i.price) || 0) * (i.quantity || 0), 0);
+    };
+
+    const getDiscount = () => ({
+        percent: cart?.discountPercent ?? 0,
+        amount: cart?.discountAmount ?? 0,
+    });
+
     return (
-        <CartContext.Provider value={{
-            cartItems,
-            addToCart,
-            removeFromCart,
-            updateQuantity,
-            clearCart,
-            getCartCount,
-            getCartTotal
-        }}>
+        <CartContext.Provider
+            value={{
+                cart,
+                cartItems,
+                cartLoading,
+                fetchCart,
+                addToCart,
+                updateQuantity,
+                removeFromCart,
+                applyCoupon,
+                getCartCount,
+                getCartTotal,
+                getSubtotal,
+                getSubtotal,
+                getDiscount,
+                rentalPeriod,
+                setRentalPeriod,
+            }}
+        >
             {children}
         </CartContext.Provider>
     );

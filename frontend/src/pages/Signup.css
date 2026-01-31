@@ -108,19 +108,21 @@
 
 /* Role Selection */
 .signup-body .role-selection {
-    margin-bottom: 2.5rem;
+    margin-bottom: 2rem;
 }
 
 .signup-body .role-title {
     font-weight: 600;
-    margin-bottom: 1rem;
+    margin-bottom: 1.25rem;
     text-align: center;
 }
 
 .signup-body .role-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    max-width: 520px;
+    margin: 0 auto;
 }
 
 .signup-body .role-card {
