@@ -70,7 +70,9 @@ model Cart {
   userId    String     @unique
   createdAt DateTime   @default(now())
   user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  items     CartItem[]
+  items           CartItem[]
+  couponCode      String?
+  discountPercent Int        @default(0)
 }
 
 model CartItem {

@@ -3,7 +3,7 @@ const prisma = new PrismaClient();
 
 const createOrder = async (req, res) => {
     try {
-        const userId = req.user.id; // From authMiddleware
+        const userId = req.user.userId; // From authMiddleware
         const { items, total } = req.body; // Items passed from frontend (cartItems)
 
         if (!items || items.length === 0) {
@@ -24,9 +24,9 @@ const createOrder = async (req, res) => {
                     status: 'PAID',
                     items: {
                         create: items.map(item => ({
-                            productId: item.productId || item.id, // Handle if frontend sends 'id' as productId
-                            quantity: item.quantity,
-                            price: item.price
+                            productId: item.productId || item.id,
+                            quantity: Number(item.quantity) || 1,
+                            price: item.price // Prisma handles string/number to Decimal
                         }))
                     }
                 },
@@ -36,6 +36,8 @@ const createOrder = async (req, res) => {
                     }
                 }
             });
+
+            console.log('Order created successfully in transaction:', newOrder.id);
 
             // 2. Clear the User's Cart
             await prisma.cart.delete({

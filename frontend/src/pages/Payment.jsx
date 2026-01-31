@@ -12,7 +12,6 @@ const Payment = () => {
     const { cartItems, getCartTotal, getCartCount, clearCart, rentalPeriod } = useCart();
     const { wishlist } = useWishlist();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const [isModalOpen, setIsModalOpen] = useState(false);
     const [saveDetails, setSaveDetails] = useState(false);
 
     const displayName = user?.name || 'User';
@@ -25,9 +24,6 @@ const Payment = () => {
     const toggleUserDropdown = () => {
         setIsDropdownOpen(!isDropdownOpen);
     };
-
-    const openModal = () => setIsModalOpen(true);
-    const closeModal = () => setIsModalOpen(false);
 
     const handlePayment = async (e) => {
         e.preventDefault();
@@ -43,7 +39,6 @@ const Payment = () => {
                 // Simulate payment processing delay if needed, or just proceed
                 setTimeout(() => {
                     clearCart();
-                    closeModal();
                     // Pass the created order details to the success page if needed, or just the ID
                     navigate('/order-success', { state: { order: response.data.data } });
                 }, 1500);
@@ -131,39 +126,66 @@ const Payment = () => {
 
             {/* Main Content */}
             <div className="main-content">
-                {/* Payment Section */}
+                {/* Payment Section - Express Checkout Form */}
                 <div className="payment-section">
-                    <h2>Payment Method</h2>
+                    <h2>Express Checkout</h2>
 
-                    {/* Card Payment */}
-                    <div className="form-group">
-                        <h3>Card</h3>
-                        <label className="form-label">Payment Details</label>
-                        <input type="text" className="form-input" placeholder="xxxx xxxx xxxx xxxx" defaultValue="" />
-
-                        <div className="checkbox-group" onClick={() => setSaveDetails(!saveDetails)}>
-                            <div className={`checkbox ${saveDetails ? 'checked' : ''}`}></div>
-                            <label>Save my payment details</label>
-                        </div>
-                    </div>
-
-                    {/* Delivery & Billing */}
-                    <div className="form-group">
-                        <h3>Delivery & Billing</h3>
-
-                        <div className="address-card">
-                            <div className="address-header">
-                                <div className="address-badge">Delivery & Billing</div>
-                                <button className="edit-btn">✏️</button>
-                            </div>
-                            <div className="address-name">{user?.name || 'Customer Name'}</div>
-                            <div className="address-text">
-                                123 Main Street, Apartment 4B<br />
-                                New York, NY 10001<br />
-                                United States
+                    <form onSubmit={handlePayment} className="checkout-form">
+                        <div className="form-group">
+                            <h3>Card Details</h3>
+                            <input type="text" className="form-input" placeholder="xxxx xxxx xxxx xxxx" required />
+                            <div className="checkbox-group" onClick={() => setSaveDetails(!saveDetails)}>
+                                <div className={`checkbox ${saveDetails ? 'checked' : ''}`}></div>
+                                <label>Save my payment details</label>
                             </div>
                         </div>
-                    </div>
+
+                        <div className="form-group">
+                            <h3>Personal Details</h3>
+                            <div className="form-row-2">
+                                <div className="input-group">
+                                    <label className="form-label">Name</label>
+                                    <input type="text" className="form-input" defaultValue={user?.name} required />
+                                </div>
+                                <div className="input-group">
+                                    <label className="form-label">Email</label>
+                                    <input type="email" className="form-input" defaultValue={user?.email} required />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="form-group">
+                            <h3>Shipping Address</h3>
+                            <div className="form-row-2">
+                                <div className="input-group">
+                                    <label className="form-label">Address</label>
+                                    <input type="text" className="form-input" placeholder="Street Address" required />
+                                </div>
+                                <div className="input-group">
+                                    <label className="form-label">City</label>
+                                    <input type="text" className="form-input" required />
+                                </div>
+                            </div>
+                            <div className="form-row-3">
+                                <div className="input-group">
+                                    <label className="form-label">Zip Code</label>
+                                    <input type="text" className="form-input" required />
+                                </div>
+                                <div className="input-group">
+                                    <label className="form-label">State</label>
+                                    <input type="text" className="form-input" required />
+                                </div>
+                                <div className="input-group">
+                                    <label className="form-label">Country</label>
+                                    <input type="text" className="form-input" required />
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" className="btn btn-pay-now" style={{ width: '100%', marginTop: '1rem' }}>
+                            Pay R{getCartTotal().toFixed(2)}
+                        </button>
+                    </form>
                 </div>
 
                 {/* Summary Sidebar */}
@@ -173,11 +195,15 @@ const Payment = () => {
                         {cartItems.slice(0, 3).map((item) => (
                             <div key={item.id} className="product-preview">
                                 <div className="product-image">
-                                    {item.image && !item.image.startsWith('data') ? '📦' : <img src={item.image} alt={item.name} />}
+                                    {item.imageUrl && !item.imageUrl.startsWith('data') ? (
+                                        <img src={item.imageUrl} alt={item.name} />
+                                    ) : (
+                                        '📦'
+                                    )}
                                 </div>
                                 <div className="product-info">
                                     <h3>{item.name}</h3>
-                                    <div className="product-price">{item.price} x {item.quantity}</div>
+                                    <div className="product-price">R{item.price} x {item.quantity}</div>
                                 </div>
                             </div>
                         ))}
@@ -188,7 +214,7 @@ const Payment = () => {
                         )}
 
                         {/* Rental Period */}
-                        <div style={{ marginBottom: '1.5rem' }}>
+                        <div style={{ marginBottom: '1.5rem', marginTop: '1rem' }}>
                             <div style={{ color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Rental Period</div>
                             <div>
                                 {rentalPeriod?.startDate ? `${rentalPeriod.startDate} ${rentalPeriod.startTime}` : 'Not selected'}
@@ -200,7 +226,7 @@ const Payment = () => {
                         {/* Summary */}
                         <div className="summary-row">
                             <span>Delivery Charges</span>
-                            <span>-</span>
+                            <span>Free</span>
                         </div>
                         <div className="summary-row">
                             <span>Sub Total</span>
@@ -211,71 +237,9 @@ const Payment = () => {
                             <span>R{getCartTotal().toFixed(2)}</span>
                         </div>
 
-                        {/* Buttons */}
-                        <button className="btn btn-pay" onClick={openModal}>Pay Now</button>
-
-                        <div className="or-divider">OR</div>
-
-                        <button className="btn btn-back" onClick={() => navigate('/address')}>‹ Back to Address</button>
+                        {/* Back Button */}
+                        <button className="btn btn-back" style={{ marginTop: '1rem', width: '100%' }} onClick={() => navigate('/cart')}>‹ Back to Cart</button>
                     </div>
-                </div>
-            </div>
-
-            {/* Express Checkout Modal */}
-            <div className={`modal ${isModalOpen ? 'active' : ''}`} onClick={(e) => {
-                if (e.target.className.includes('modal active')) closeModal();
-            }}>
-                <div className="modal-content">
-                    <div className="modal-header">
-                        <h2>Express Checkout</h2>
-                        <button className="close-btn" onClick={closeModal}>✕</button>
-                    </div>
-
-                    <form onSubmit={handlePayment}>
-                        <div className="modal-form-group">
-                            <label className="form-label">Card Details</label>
-                            <input type="text" className="form-input" placeholder="xxxx xxxx xxxx xxxx" required />
-                        </div>
-
-                        <div className="modal-form-row-2">
-                            <div className="modal-form-group">
-                                <label className="form-label">Name</label>
-                                <input type="text" className="form-input" defaultValue={user?.name} required />
-                            </div>
-                            <div className="modal-form-group">
-                                <label className="form-label">Email</label>
-                                <input type="email" className="form-input" defaultValue={user?.email} required />
-                            </div>
-                        </div>
-
-                        <div className="modal-form-row-2">
-                            <div className="modal-form-group">
-                                <label className="form-label">Address</label>
-                                <input type="text" className="form-input" required />
-                            </div>
-                            <div className="modal-form-group">
-                                <label className="form-label">City</label>
-                                <input type="text" className="form-input" required />
-                            </div>
-                        </div>
-
-                        <div className="modal-form-row">
-                            <div className="modal-form-group">
-                                <label className="form-label">Zip Code</label>
-                                <input type="text" className="form-input" required />
-                            </div>
-                            <div className="modal-form-group">
-                                <label className="form-label">State</label>
-                                <input type="text" className="form-input" required />
-                            </div>
-                            <div className="modal-form-group">
-                                <label className="form-label">Country</label>
-                                <input type="text" className="form-input" required />
-                            </div>
-                        </div>
-
-                        <button type="submit" className="btn btn-pay-now">Pay R{getCartTotal().toFixed(2)}</button>
-                    </form>
                 </div>
             </div>
         </div>
