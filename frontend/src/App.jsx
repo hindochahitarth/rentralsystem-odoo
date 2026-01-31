@@ -4,7 +4,10 @@ import Index from './pages/Index';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import Dashboard from './pages/Dashboard';
+import VendorDashboard from './pages/VendorDashboard';
+import AdminDashboard from './pages/AdminDashboard';
 
 const ProtectedRoute = ({ children }) => {
     const { user, loading } = useAuth();
@@ -13,6 +16,13 @@ const ProtectedRoute = ({ children }) => {
     if (!user) return <Navigate to="/" replace />;
 
     return children;
+};
+
+const DashboardRouter = () => {
+    const { user } = useAuth();
+    if (user?.role === 'ADMIN') return <AdminDashboard />;
+    if (user?.role === 'VENDOR') return <VendorDashboard />;
+    return <Dashboard />;
 };
 
 function App() {
@@ -24,11 +34,12 @@ function App() {
                     <Route path="/login" element={<Login />} />
                     <Route path="/signup" element={<Signup />} />
                     <Route path="/forgot-password" element={<ForgotPassword />} />
+                    <Route path="/reset-password" element={<ResetPassword />} />
                     <Route
                         path="/dashboard"
                         element={
                             <ProtectedRoute>
-                                <Dashboard />
+                                <DashboardRouter />
                             </ProtectedRoute>
                         }
                     />
