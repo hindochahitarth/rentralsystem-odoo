@@ -214,8 +214,8 @@ const Dashboard = () => {
                                     <span className="price-label">Rxx / per Month</span>
                                 </div>
                                 <div className="product-actions">
-                                    <button className="btn btn-primary">Rent Now</button>
-                                    <button className="btn btn-secondary">Details</button>
+                                    <button className="btn btn-primary" onClick={() => navigate('/product/1')}>Rent Now</button>
+                                    <button className="btn btn-secondary" onClick={() => navigate('/product/1')}>Details</button>
                                 </div>
                             </div>
                         </div>
@@ -231,8 +231,8 @@ const Dashboard = () => {
                                     <span className="price-label">Rxx / per Month</span>
                                 </div>
                                 <div className="product-actions">
-                                    <button className="btn btn-primary">Rent Now</button>
-                                    <button className="btn btn-secondary">Details</button>
+                                    <button className="btn btn-primary" onClick={() => navigate('/product/2')}>Rent Now</button>
+                                    <button className="btn btn-secondary" onClick={() => navigate('/product/2')}>Details</button>
                                 </div>
                             </div>
                         </div>
@@ -248,8 +248,8 @@ const Dashboard = () => {
                                     <span className="price-label">Rxx / per Month</span>
                                 </div>
                                 <div className="product-actions">
-                                    <button className="btn btn-primary">Rent Now</button>
-                                    <button className="btn btn-secondary">Details</button>
+                                    <button className="btn btn-primary" onClick={() => navigate('/product/3')}>Rent Now</button>
+                                    <button className="btn btn-secondary" onClick={() => navigate('/product/3')}>Details</button>
                                 </div>
                             </div>
                         </div>
