@@ -29,6 +29,7 @@ model User {
   updatedAt       DateTime @updatedAt
   couponUsages    CouponUsage[]
   cart            Cart?
+  orders          Order[]
 }
 
 enum DurationType {
@@ -53,6 +54,7 @@ model Product {
   createdAt     DateTime      @default(now())
   variants      ProductVariant[]
   cartItems     CartItem[]
+  orderItems    OrderItem[]
 }
 
 model ProductVariant {
@@ -99,4 +101,26 @@ model CouponUsage {
   usedAt    DateTime @default(now())
   coupon    Coupon   @relation(fields: [couponId], references: [id], onDelete: Cascade)
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Order {
+  id            String      @id @default(uuid())
+  orderNumber   String      @unique @default(cuid()) // SO00010 style can be generated or use CUID
+  userId        String
+  user          User        @relation(fields: [userId], references: [id])
+  totalAmount   Decimal     @db.Decimal(10, 2)
+  status        String      @default("PAID")
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  items         OrderItem[]
+}
+
+model OrderItem {
+  id        String   @id @default(uuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  quantity  Int
+  price     Decimal  @db.Decimal(10, 2)
 }

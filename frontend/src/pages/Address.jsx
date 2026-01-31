@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import { useWishlist } from '../context/WishlistContext';
 import './Address.css';
 
 const Address = () => {
     const navigate = useNavigate();
     const { user, logout } = useAuth();
-    const { cartItems, getCartTotal, getCartCount } = useCart();
+    const { cartItems, getCartTotal, getCartCount, rentalPeriod } = useCart();
+    const { wishlist } = useWishlist();
     const [selectedDelivery, setSelectedDelivery] = useState('standard');
     const [billingSameAsDelivery, setBillingSameAsDelivery] = useState(false);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -40,9 +42,9 @@ const Address = () => {
 
                     <div className="nav-links">
                         <Link to="/dashboard" className="nav-link">Products</Link>
-                        <Link to="#" className="nav-link">Terms & Condition</Link>
-                        <Link to="#" className="nav-link">About us</Link>
-                        <Link to="#" className="nav-link">Contact Us</Link>
+                        <Link to="/terms" className="nav-link">Terms & Condition</Link>
+                        <Link to="/about" className="nav-link">About us</Link>
+                        <Link to="/contact" className="nav-link">Contact Us</Link>
                     </div>
 
                     <div className="search-container">
@@ -51,11 +53,10 @@ const Address = () => {
                     </div>
 
                     <div className="nav-actions">
-                        <div className="icon-btn">❤️</div>
-                        <div className="icon-btn">
-                            🛒
-                            <span className="cart-badge">{getCartCount()}</span>
-                        </div>
+                        <div className="icon-btn" title="Wishlist">❤️ <span className="cart-badge" style={{ background: 'var(--accent)' }}>{wishlist.length}</span></div>
+                        <Link to="/cart" className="icon-btn" style={{ textDecoration: 'none', color: 'inherit' }}>
+                            🛒 <span className="cart-badge">{getCartCount()}</span>
+                        </Link>
                         <div className="user-profile-btn" onClick={toggleUserDropdown} style={{ position: 'relative' }}>
                             <div>👤</div>
                             {/* User Dropdown Menu */}
@@ -113,7 +114,7 @@ const Address = () => {
                     <div className="form-group">
                         <h2>Delivery Method</h2>
                         <div className="delivery-options">
-                            <div 
+                            <div
                                 className={`delivery-option ${selectedDelivery === 'standard' ? 'selected' : ''}`}
                                 onClick={() => setSelectedDelivery('standard')}
                             >
@@ -123,7 +124,7 @@ const Address = () => {
                                 </div>
                                 <div className="delivery-price">Free</div>
                             </div>
-                            <div 
+                            <div
                                 className={`delivery-option ${selectedDelivery === 'pickup' ? 'selected' : ''}`}
                                 onClick={() => setSelectedDelivery('pickup')}
                             >
@@ -189,7 +190,11 @@ const Address = () => {
                         {/* Rental Period */}
                         <div style={{ marginBottom: '1.5rem' }}>
                             <div style={{ color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Rental Period</div>
-                            <div>Today to Tomorrow</div>
+                            <div>
+                                {rentalPeriod?.startDate ? `${rentalPeriod.startDate} ${rentalPeriod.startTime}` : 'Not selected'}
+                                {' to '}
+                                {rentalPeriod?.endDate ? `${rentalPeriod.endDate} ${rentalPeriod.endTime}` : 'Not selected'}
+                            </div>
                         </div>
 
                         {/* Summary */}
@@ -208,9 +213,9 @@ const Address = () => {
 
                         {/* Buttons */}
                         <button className="btn-continue" onClick={handleContinue}>Continue ›</button>
-                        
+
                         <div className="or-divider">OR</div>
-                        
+
                         <button className="btn-back" onClick={() => navigate('/cart')}>‹ Back to Cart</button>
                     </div>
                 </div>

@@ -106,6 +106,14 @@ export const CartProvider = ({ children }) => {
         }
     };
 
+    const clearCart = async () => {
+        // If we want to clear backend cart via this method? 
+        // Usually order creation does it. But for frontend state reset:
+        setCart(null);
+        // If we also wanted to clear backend:
+        // if (hasToken()) await api.delete('/cart'); 
+    };
+
     const applyCoupon = async (code) => {
         if (!hasToken()) return { success: false, message: 'Please sign in' };
         try {
@@ -148,6 +156,7 @@ export const CartProvider = ({ children }) => {
                 addToCart,
                 updateQuantity,
                 removeFromCart,
+                clearCart,
                 applyCoupon,
                 getCartCount,
                 getCartTotal,
