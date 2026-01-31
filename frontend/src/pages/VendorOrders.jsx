@@ -60,7 +60,7 @@ const VendorOrders = () => {
                 <div className="header-left">
                     <h1 className="page-title">Vendor Orders</h1>
                     <button className="settings-btn">⚙️</button>
-                    <button className="btn-new">New</button>
+                    <Link to="/orders/new" className="btn-new" style={{ textDecoration: 'none' }}>New</Link>
                 </div>
 
                 <div className="header-actions">

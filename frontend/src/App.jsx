@@ -20,6 +20,8 @@ import Terms from './pages/Terms';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import VendorOrders from './pages/VendorOrders';
+import VendorNewOrder from './pages/VendorNewOrder';
+import VendorInvoice from './pages/VendorInvoice';
 
 const ProtectedRoute = ({ children }) => {
     const { user, loading } = useAuth();
@@ -127,6 +129,22 @@ function App() {
                                     element={
                                         <ProtectedRoute>
                                             <VendorOrders />
+                                        </ProtectedRoute>
+                                    }
+                                />
+                                <Route
+                                    path="/orders/new"
+                                    element={
+                                        <ProtectedRoute>
+                                            <VendorNewOrder />
+                                        </ProtectedRoute>
+                                    }
+                                />
+                                <Route
+                                    path="/invoice/:id"
+                                    element={
+                                        <ProtectedRoute>
+                                            <VendorInvoice />
                                         </ProtectedRoute>
                                     }
                                 />
