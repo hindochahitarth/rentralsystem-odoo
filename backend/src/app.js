@@ -23,6 +23,8 @@ app.use('/api/fulfillment', require('./routes/fulfillmentRoutes'));
 app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/invoice', require('./routes/invoiceRoutes'));
 app.use('/api/settings', adminSettingsRoutes);
+app.use('/api/dashboard', require('./routes/dashboardRoutes'));
+app.use('/api/reports', require('./routes/reportsRoutes'));
 app.use('/uploads', express.static('uploads'));
 
 app.get('/health', (req, res) => {

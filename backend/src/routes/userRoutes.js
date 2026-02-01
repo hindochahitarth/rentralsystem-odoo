@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const { protect } = require('../middlewares/authMiddleware');
-const { getProfile, updateProfile, getCustomers, updatePassword } = require('../controllers/userController');
+const { protect, requireAdmin } = require('../middlewares/authMiddleware');
+const { getProfile, updateProfile, getCustomers, updatePassword, getAllUsers } = require('../controllers/userController');
 const multer = require('multer');
 const path = require('path');
 
@@ -34,5 +34,7 @@ router.get('/profile', getProfile);
 router.put('/profile', upload.single('profileImage'), updateProfile);
 router.put('/password', updatePassword);
 router.get('/customers', protect, getCustomers);
+// Admin route to list all users
+router.get('/', protect, requireAdmin, getAllUsers);
 
 module.exports = router;

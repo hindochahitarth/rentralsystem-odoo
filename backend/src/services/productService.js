@@ -113,7 +113,7 @@ const checkAvailability = async (productId, startDate, endDate) => {
 
     return {
         available: availableQuantity,  // Return quantity, not boolean
-        totalStock: product.stock,
+        totalStock: product.stock,+
         reserved: reservedQuantity
     };
 };

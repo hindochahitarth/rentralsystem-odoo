@@ -85,19 +85,20 @@ const Cart = () => {
                         <Link to="/cart" className="icon-btn" style={{ textDecoration: 'none', color: 'inherit' }}>
                             🛒 <span className="cart-badge">{getCartCount()}</span>
                         </Link>
-                        <div className="user-profile-btn" onClick={toggleUserDropdown} style={{ position: 'relative' }}>
-                            <div>👤</div>
-                            {isDropdownOpen && (
-                                <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: '0.5rem', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '0.5rem', width: '200px', zIndex: 1000, boxShadow: '0 4px 12px rgba(0,0,0,0.5)' }}>
-                                    <div style={{ padding: '0.75rem', borderBottom: '1px solid var(--border)' }}>
-                                        <div style={{ fontWeight: 600 }}>{displayName}</div>
-                                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{user?.email}</div>
-                                    </div>
-                                    <button onClick={handleLogout} style={{ width: '100%', textAlign: 'left', padding: '0.75rem', background: 'transparent', border: 'none', color: 'var(--text)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                        <span>🚪</span> Logout
-                                    </button>
+                        <div className="user-profile-btn" onClick={toggleUserDropdown}>
+                            <div className="user-avatar">{initials}</div>
+                            <span className="dropdown-arrow">▼</span>
+                            <div className={`user-dropdown ${isDropdownOpen ? 'active' : ''}`}>
+                                <div className="dropdown-header">
+                                    <div className="dropdown-user-name">{displayName}</div>
+                                    <div className="dropdown-user-email">{user?.email}</div>
                                 </div>
-                            )}
+                                <Link to="/vendor/profile" className="dropdown-item"><span>👤</span><span>My account/ My Profile</span></Link>
+                                <Link to={user?.role === 'VENDOR' ? '/vendor/orders' : '/customer/orders'} className="dropdown-item"><span>📦</span><span>My Orders</span></Link>
+                                <Link to="#" className="dropdown-item"><span>⚙️</span><span>Settings</span></Link>
+                                <div className="dropdown-divider" />
+                                <button onClick={handleLogout} className="dropdown-item"><span>🚪</span><span>Logout</span></button>
+                            </div>
                         </div>
                     </div>
                 </div>

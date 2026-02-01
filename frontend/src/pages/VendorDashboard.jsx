@@ -87,6 +87,25 @@ const VendorDashboard = () => {
         p.category.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
+    const handleEditProduct = (productId) => {
+        navigate(`/vendor/products/${productId}`);
+    };
+
+    const handleDeleteProduct = async (productId) => {
+        if (!window.confirm("Are you sure you want to delete this product?")) return;
+        try {
+            const res = await api.delete(`/products/${productId}`);
+            if (res.data.success) {
+                setProducts(prev => prev.filter(p => p.id !== productId));
+                setStats(prev => ({ ...prev, productsListed: prev.productsListed - 1 }));
+                alert("Product deleted");
+            }
+        } catch (error) {
+            console.error("Delete error", error);
+            alert("Failed to delete");
+        }
+    };
+
     if (loading) return <div style={{ padding: '2rem', color: 'white' }}>Loading Dashboard...</div>;
 
     return (
@@ -205,9 +224,9 @@ const VendorDashboard = () => {
                                     </td>
                                     <td>
                                         <div className="vendor-action-buttons">
-                                            <button className="vendor-icon-btn" title="Edit">✏️</button>
-                                            <button className="vendor-icon-btn" title="View">👁️</button>
-                                            <button className="vendor-icon-btn" title="Delete">🗑️</button>
+                                            <button className="vendor-icon-btn" title="Edit" onClick={() => handleEditProduct(p.id)}>✏️</button>
+                                            <button className="vendor-icon-btn" title="View" onClick={() => handleEditProduct(p.id)}>👁️</button>
+                                            <button className="vendor-icon-btn" title="Delete" onClick={() => handleDeleteProduct(p.id)}>🗑️</button>
                                         </div>
                                     </td>
                                 </tr>
