@@ -98,6 +98,52 @@ async function main() {
         },
     ];
 
+    const { hashPassword } = require('../src/utils/auth');
+
+    // Default password for all seed users
+    const hashedPassword = await hashPassword('password123');
+
+    // 1. Upsert Admin
+    await prisma.user.upsert({
+        where: { email: 'admin@rentflow.com' },
+        update: {},
+        create: {
+            name: 'System Admin',
+            email: 'admin@rentflow.com',
+            password: hashedPassword,
+            role: 'ADMIN',
+        },
+    });
+
+    // 2. Upsert Vendor
+    await prisma.user.upsert({
+        where: { email: 'vendor@rentflow.com' },
+        update: {},
+        create: {
+            name: 'TechRent Pro',
+            email: 'vendor@rentflow.com',
+            password: hashedPassword,
+            role: 'VENDOR',
+            vendorCategory: 'Electronics',
+            companyName: 'TechRent Solutions',
+            gstin: '29ABCDE1234F1Z5'
+        },
+    });
+
+    // 3. Upsert Customer
+    await prisma.user.upsert({
+        where: { email: 'customer@rentflow.com' },
+        update: {},
+        create: {
+            name: 'John Doe',
+            email: 'customer@rentflow.com',
+            password: hashedPassword,
+            role: 'CUSTOMER',
+        },
+    });
+
+    console.log('Seed: Users admin/vendor/customer @rentflow.com created (pwd: password123)');
+
     try {
         for (const p of productData) {
             const existing = await prisma.product.findFirst({ where: { name: p.name } });
@@ -112,7 +158,7 @@ async function main() {
                         description: p.description,
                         price: p.price,
                         durationType: p.durationType,
-                        stock: p.stock,
+                        stock: Math.max(existing.stock, p.stock), // Ensure stock doesn't go down on seed
                         imageUrl: p.imageUrl,
                     },
                 });

@@ -31,7 +31,10 @@ function formatCart(cart) {
         id: item.id,
         productId: item.productId,
         quantity: item.quantity,
+        quantity: item.quantity,
         selectedVariants: item.selectedVariants || {},
+        startDate: item.startDate,
+        endDate: item.endDate,
         product: {
             id: item.product.id,
             name: item.product.name,
@@ -61,12 +64,24 @@ function formatCart(cart) {
 /**
  * Add item to cart. Creates cart if needed. selectedVariants = { optionName: optionValue }.
  */
-async function addToCart(userId, { productId, quantity = 1, selectedVariants = {} }) {
+async function addToCart(userId, { productId, quantity = 1, selectedVariants = {}, startDate, endDate }) {
+    const productService = require('./productService'); // Import product service
+
     const product = await prisma.product.findUnique({ where: { id: productId } });
     if (!product) throw new Error('Product not found');
     if (product.stock < 1) throw new Error('Product is out of stock');
     const qty = Math.max(1, parseInt(quantity, 10) || 1);
-    if (qty > product.stock) throw new Error(`Only ${product.stock} available`);
+
+    if (startDate && endDate) {
+        // Validation: Check if stock is available for these dates
+        const availability = await productService.checkAvailability(productId, startDate, endDate);
+        if (availability.available < qty) {
+            throw new Error(`Only ${availability.available} units available for selected dates`);
+        }
+    } else {
+        // Fallback for non-rental or missing date items (though validation usually enforced in frontend)
+        if (qty > product.stock) throw new Error(`Only ${product.stock} available`);
+    }
 
     let cart = await prisma.cart.findUnique({ where: { userId } });
     if (!cart) {
@@ -74,11 +89,20 @@ async function addToCart(userId, { productId, quantity = 1, selectedVariants = {
     }
 
     const normalizedVariants = selectedVariants && typeof selectedVariants === 'object' ? selectedVariants : {};
+
+    // Check for existing item with same Product + Variants + Dates
     const existingItems = await prisma.cartItem.findMany({
         where: { cartId: cart.id, productId },
         include: { product: true },
     });
-    const existing = existingItems.find((i) => JSON.stringify(i.selectedVariants || {}) === JSON.stringify(normalizedVariants));
+
+    const existing = existingItems.find((i) => {
+        const variantMatch = JSON.stringify(i.selectedVariants || {}) === JSON.stringify(normalizedVariants);
+        // Date match check
+        const startMatch = (!i.startDate && !startDate) || (i.startDate && startDate && new Date(i.startDate).getTime() === new Date(startDate).getTime());
+        const endMatch = (!i.endDate && !endDate) || (i.endDate && endDate && new Date(i.endDate).getTime() === new Date(endDate).getTime());
+        return variantMatch && startMatch && endMatch;
+    });
 
     if (existing) {
         const newQty = Math.min(existing.quantity + qty, product.stock);
@@ -93,6 +117,8 @@ async function addToCart(userId, { productId, quantity = 1, selectedVariants = {
                 productId,
                 quantity: qty,
                 selectedVariants: normalizedVariants,
+                startDate: startDate ? new Date(startDate) : null,
+                endDate: endDate ? new Date(endDate) : null,
             },
         });
     }

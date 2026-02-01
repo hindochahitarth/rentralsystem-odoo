@@ -1,10 +1,25 @@
 const express = require('express');
-const { createOrder, getOrder } = require('../controllers/orderController');
+const {
+    createOrder,
+    getOrder,
+    getOrders,
+    exportOrders,
+    confirmOrder,
+    payOrder
+} = require('../controllers/orderController');
 const { protect } = require('../middlewares/authMiddleware');
 
 const router = express.Router();
 
-router.post('/', protect, createOrder);
+// General routes (all authenticated users)
+router.post('/', protect, createOrder); // Create order/quotation
+router.get('/export', protect, exportOrders); // Must be before /:id to avoid conflict
+router.get('/', protect, getOrders);
 router.get('/:id', protect, getOrder);
 
+// Order actions
+router.post('/:id/confirm', protect, confirmOrder); // Confirm order (vendor)
+router.post('/:id/pay', protect, payOrder); // Pay order (customer)
+
 module.exports = router;
+

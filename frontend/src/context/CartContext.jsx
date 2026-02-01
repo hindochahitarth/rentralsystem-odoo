@@ -46,6 +46,8 @@ export const CartProvider = ({ children }) => {
         productId: item.productId,
         quantity: item.quantity,
         selectedVariants: item.selectedVariants || {},
+        startDate: item.startDate,
+        endDate: item.endDate,
         name: item.product?.name,
         price: item.product?.price,
         imageUrl: item.product?.imageUrl,
@@ -53,7 +55,7 @@ export const CartProvider = ({ children }) => {
         product: item.product,
     })) || [];
 
-    const addToCart = async (productOrId, quantity = 1, selectedVariants = {}) => {
+    const addToCart = async (productOrId, quantity = 1, selectedVariants = {}, startDate = null, endDate = null) => {
         const productId = typeof productOrId === 'object' && productOrId?.id
             ? productOrId.id
             : productOrId;
@@ -72,6 +74,8 @@ export const CartProvider = ({ children }) => {
                 productId,
                 quantity: qty,
                 selectedVariants: variants && Object.keys(variants).length ? variants : {},
+                startDate,
+                endDate
             });
             if (res.data?.success && res.data?.data) setCart(res.data.data);
             return { success: true, data: res.data?.data };

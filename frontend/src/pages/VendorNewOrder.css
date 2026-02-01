@@ -1,0 +1,470 @@
+/* VendorNewOrder.css */
+:root {
+    --bg-dark: #0f111a;
+    --panel-dark: #1e2130;
+    --text-primary: #e0e0e0;
+    --text-secondary: #a0a0a0;
+    --accent-purple: #8b5cf6;
+    --accent-blue: #3b82f6;
+    --border-color: #2d3748;
+}
+
+.vendor-new-order-page {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-dark);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* --- Control Panel (Top Actions) --- */
+.control-panel {
+    background-color: var(--panel-dark);
+    border-bottom: 1px solid var(--border-color);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.action-bar {
+    display: flex;
+    gap: 0.8rem;
+}
+
+.btn-action-primary {
+    background-color: #d946ef;
+    /* Fuchsia/Pink */
+    color: white;
+    border: none;
+    padding: 0.6rem 1.5rem;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.btn-action-secondary {
+    background-color: transparent;
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    padding: 0.6rem 1.2rem;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.btn-action-secondary:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.btn-action-accent {
+    background-color: var(--accent-purple);
+    color: white;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-left: 1rem;
+}
+
+/* --- Pipeline Status --- */
+.pipeline-status {
+    display: flex;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    overflow: hidden;
+    background-color: #171923;
+}
+
+.pipeline-step {
+    padding: 0.6rem 1.2rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-weight: 500;
+    position: relative;
+    cursor: default;
+    border-right: 1px solid var(--border-color);
+}
+
+.pipeline-step:last-child {
+    border-right: none;
+}
+
+.pipeline-step.active {
+    background-color: var(--panel-dark);
+    color: white;
+    font-weight: 600;
+}
+
+.pipeline-step.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background-color: var(--accent-purple);
+}
+
+
+/* --- Main Form Card --- */
+.page-content-wrapper {
+    flex: 1;
+    padding: 2rem;
+    display: flex;
+    justify-content: center;
+}
+
+.order-form-card {
+    background-color: var(--panel-dark);
+    width: 100%;
+    max-width: 1200px;
+    border-radius: 8px;
+    padding: 2.5rem;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.order-header-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.status-badge-group {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.badge-purple {
+    background-color: #c084fc;
+    color: #3b0764;
+    padding: 0.3rem 0.8rem;
+    border-radius: 4px;
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+
+.form-title {
+    font-size: 1.8rem;
+    font-weight: 500;
+    color: white;
+    margin: 0;
+}
+
+.toggle-icons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.icon-checked {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    background-color: #4ade80;
+    border-radius: 4px;
+    position: relative;
+}
+
+.icon-checked::after {
+    content: '✓';
+    position: absolute;
+    color: #064e3b;
+    font-size: 14px;
+    left: 4px;
+    top: -1px;
+}
+
+.icon-unchecked {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #ef4444;
+    border-radius: 4px;
+}
+
+
+.order-number-display {
+    font-size: 2.5rem;
+    margin-bottom: 2.5rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.5rem;
+    display: inline-block;
+}
+
+/* --- Form Grid --- */
+.form-grid-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    margin-bottom: 3rem;
+}
+
+.form-field-row {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.form-field-row label {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.input-standard {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid #4a5568;
+    color: white;
+    padding: 0.4rem 0;
+    width: 100%;
+    font-size: 1rem;
+}
+
+.input-standard:focus {
+    outline: none;
+    border-bottom-color: var(--accent-purple);
+}
+
+.date-range-group {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* --- Tabs & Table --- */
+.tabs-bar {
+    display: flex;
+    gap: 2rem;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 1.5rem;
+}
+
+.tab-link {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    padding-bottom: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.tab-link.active {
+    color: white;
+    border-bottom: 2px solid white;
+}
+
+.order-lines-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.order-lines-table th {
+    text-align: left;
+    color: var(--text-primary);
+    font-weight: 600;
+    padding: 0.8rem 0;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.order-lines-table td {
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: top;
+}
+
+.input-table {
+    background: transparent;
+    border: none;
+    color: white;
+    width: 100%;
+    padding: 0.4rem;
+    border-radius: 4px;
+}
+
+.input-table:hover {
+    background-color: #2d3748;
+}
+
+.row-subtext {
+    font-size: 0.8rem;
+    color: #64748b;
+    padding-left: 0.5rem;
+}
+
+.link-action-blue {
+    background: none;
+    border: none;
+    color: #3b82f6;
+    cursor: pointer;
+    font-size: 0.95rem;
+    margin-right: 1.5rem;
+    padding: 0;
+}
+
+.link-action-blue:hover {
+    text-decoration: underline;
+}
+
+.bottom-actions-row {
+    margin-top: 1rem;
+    margin-bottom: 3rem;
+}
+
+.sc-note-box {
+    background-color: rgba(255, 255, 0, 0.1);
+    color: #fef08a;
+    padding: 1rem;
+    border-radius: 6px;
+    margin-bottom: 2rem;
+    white-space: pre-wrap;
+}
+
+/* --- Footer & Totals --- */
+.footer-layout {
+    display: flex;
+    justify-content: flex-end;
+    /* Align right */
+    gap: 4rem;
+}
+
+.footer-left {
+    flex: 1;
+    /* Takes remaining space if needed */
+}
+
+.footer-right {
+    min-width: 350px;
+}
+
+.link-blue {
+    color: #3b82f6;
+    text-decoration: none;
+}
+
+.financial-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.btn-small-outline {
+    background: transparent;
+    border: 1px solid #4a5568;
+    color: var(--text-secondary);
+    padding: 0.3rem 0.8rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.btn-small-outline:hover {
+    background-color: #2d3748;
+}
+
+.coupon-input-group {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.input-small {
+    background: #111;
+    border: 1px solid #444;
+    color: white;
+    padding: 0.3rem;
+    border-radius: 4px;
+    width: 80px;
+}
+
+.btn-small-go {
+    background-color: #3b82f6;
+    border: none;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 0 0.6rem;
+}
+
+/* Totals Blocks */
+.totals-display {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.total-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 1rem;
+}
+
+.total-row.grand-total-line {
+    border-top: 1px solid var(--border-color);
+    padding-top: 1rem;
+    margin-top: 0.5rem;
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+.input-mini-right {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid #555;
+    color: white;
+    text-align: right;
+    width: 100px;
+}
+
+.save-register-btn-area {
+    margin-top: 2rem;
+    text-align: right;
+}
+
+.btn-primary-large {
+    background-color: var(--accent-purple);
+    color: white;
+    border: none;
+    padding: 0.8rem 2rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+@media print {
+    .no-print {
+        display: none !important;
+    }
+
+    .vendor-new-order-page {
+        background: white;
+        color: black;
+    }
+
+    .order-form-card {
+        border: none;
+        box-shadow: none;
+        padding: 0;
+    }
+
+    .input-standard,
+    .input-table {
+        border-bottom: 1px solid #ccc;
+        color: black;
+    }
+
+    .page-content-wrapper {
+        padding: 0;
+    }
+
+    .control-panel {
+        display: none;
+    }
+}
