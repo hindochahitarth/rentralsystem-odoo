@@ -278,36 +278,51 @@ const payOrder = async (req, res) => {
         // Mock Payment Processing
         // In real app: verify Stripe/PaymentGateway transaction here.
 
-        const order = await prisma.order.findUnique({ where: { id } });
+        const order = await prisma.order.findUnique({
+            where: { id },
+            include: { invoice: true }
+        });
+
         if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
 
         if (order.status !== 'SALES_ORDER' && order.status !== 'CONFIRMED') {
             return res.status(400).json({ success: false, message: 'Only confirmed orders can be paid.' });
         }
 
-        // Transaction: Update Order -> Create Invoice
+        // ERP RULE: Invoice must exist before payment
+        if (!order.invoice) {
+            return res.status(400).json({
+                success: false,
+                message: 'No invoice has been generated for this order yet. Please wait for the vendor to invoice the order.'
+            });
+        }
+
+        if (order.invoice.status === 'PAID') {
+            return res.status(400).json({ success: false, message: 'This order is already paid.' });
+        }
+
+        // Transaction: Update Order -> Update Invoice
         const result = await prisma.$transaction(async (prisma) => {
             const updatedOrder = await prisma.order.update({
                 where: { id },
                 data: { status: 'PAID' }
             });
 
-            const invoice = await prisma.invoice.create({
+            const updatedInvoice = await prisma.invoice.update({
+                where: { id: order.invoice.id },
                 data: {
-                    orderId: id,
-                    amount: order.totalAmount,
                     status: 'PAID',
                     paymentDate: new Date(),
                     method: method || 'ONLINE'
                 }
             });
 
-            return { order: updatedOrder, invoice };
+            return { order: updatedOrder, invoice: updatedInvoice };
         });
 
         res.status(200).json({
             success: true,
-            message: 'Payment successful. Order Paid.',
+            message: 'Payment successful. Invoice settled.',
             data: result.order,
             invoiceId: result.invoice.id
         });

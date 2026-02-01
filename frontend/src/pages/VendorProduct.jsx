@@ -24,7 +24,7 @@ const VendorProduct = () => {
         priceUnit: 'Per Units',
         costPrice: '',
         costPriceUnit: 'Per Units',
-        category: 'Furniture/ Electronics',
+        category: '',
         vendorName: '', // This might be auto-filled from user profile in a real app
         attributes: [] // [{ name: '', value: '' }]
     });
@@ -32,8 +32,10 @@ const VendorProduct = () => {
     useEffect(() => {
         if (isEditMode) {
             fetchProductDetails();
+        } else if (user?.name) {
+            setFormData(prev => ({ ...prev, vendorName: user.name }));
         }
-    }, [id]);
+    }, [id, user]);
 
     const fetchProductDetails = async () => {
         try {

@@ -40,12 +40,21 @@ const VendorProducts = () => {
     };
 
     const handleProductClick = (productId) => {
-        // Navigate to edit page (currently VendorProduct.jsx acts as create/edit, hopefully)
-        // For now, let's assume we can pass an ID to edit
-        // Since the current VendorProduct.jsx seems to be designed for "New", 
-        // we might strictly route to a new one or need to update routing to support /edit/:id
-        // user requested "Listing", so clicking should probably go to details or edit.
-        navigate(`/vendor/products/${productId}`); // Assumption: we'll add this route or similar
+        navigate(`/vendor/products/${productId}`);
+    };
+
+    const handleDeleteProduct = async (e, productId) => {
+        e.stopPropagation();
+        if (!window.confirm("Are you sure you want to delete this product?")) return;
+        try {
+            const res = await api.delete(`/products/${productId}`);
+            if (res.data.success) {
+                setProducts(prev => prev.filter(p => p.id !== productId));
+            }
+        } catch (error) {
+            console.error("Delete error", error);
+            alert(error.response?.data?.message || "Failed to delete");
+        }
     };
 
     const filteredProducts = products.filter(product =>
@@ -183,11 +192,11 @@ const VendorProducts = () => {
                                     <tr>
                                         <th style={{ width: '60px' }}></th>
                                         <th>Product Name</th>
-                                        <th>Vendor</th>
-                                        <th>Qty</th>
-                                        <th>Unit</th>
-                                        <th>Sales Price</th>
+                                        <th>Category</th>
+                                        <th>Price</th>
+                                        <th>Stock</th>
                                         <th>Status</th>
+                                        <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -197,14 +206,31 @@ const VendorProducts = () => {
                                                 <img src={product.imageUrl || 'https://via.placeholder.com/48'} className="list-thumb" alt="" />
                                             </td>
                                             <td>{product.name}</td>
-                                            <td>{user?.name}</td>
-                                            <td>{product.quantityOnHand}</td>
-                                            <td>{product.durationType ? (product.durationType === 'DAY' ? 'Day' : product.durationType === 'MONTH' ? 'Month' : product.durationType === 'HOUR' ? 'Hour' : product.durationType) : 'Unit'}</td>
-                                            <td>${product.price}</td>
+                                            <td>{product.category || 'Generic'}</td>
+                                            <td>Rs {product.price}</td>
+                                            <td>{product.quantityOnHand} units</td>
                                             <td>
                                                 <span className={`status-badge ${product.isPublished ? 'status-published' : 'status-draft'}`}>
                                                     {product.isPublished ? 'Published' : 'Draft'}
                                                 </span>
+                                            </td>
+                                            <td>
+                                                <div className="action-buttons">
+                                                    <button
+                                                        className="icon-btn edit-btn"
+                                                        onClick={(e) => { e.stopPropagation(); handleProductClick(product.id); }}
+                                                        title="Edit"
+                                                    >
+                                                        ✏️
+                                                    </button>
+                                                    <button
+                                                        className="icon-btn delete-btn"
+                                                        onClick={(e) => handleDeleteProduct(e, product.id)}
+                                                        title="Delete"
+                                                    >
+                                                        🗑️
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     ))}

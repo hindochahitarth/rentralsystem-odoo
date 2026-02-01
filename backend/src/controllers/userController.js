@@ -137,9 +137,30 @@ const updatePassword = async (req, res) => {
     }
 };
 
+// Get all users (Admin only)
+const getAllUsers = async (req, res) => {
+    try {
+        const users = await prisma.user.findMany({
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                role: true,
+                companyName: true,
+                createdAt: true
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+        res.status(200).json({ success: true, count: users.length, data: users });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Failed to fetch users' });
+    }
+};
+
 module.exports = {
     getProfile,
     updateProfile,
     getCustomers,
-    updatePassword
+    updatePassword,
+    getAllUsers
 };

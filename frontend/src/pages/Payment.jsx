@@ -28,14 +28,21 @@ const Payment = () => {
 
     const fetchOrderDetails = async () => {
         try {
+            console.log('Fetching order:', orderId);
             setLoading(true);
             const response = await api.get(`/orders/${orderId}`);
+            console.log('Order response:', response.data);
             if (response.data.success) {
                 setOrder(response.data.data);
+                console.log('Order loaded:', response.data.data);
+            } else {
+                console.error('Order fetch failed:', response.data.message);
+                alert('Failed to load order: ' + response.data.message);
             }
         } catch (error) {
             console.error('Failed to fetch order:', error);
-            alert('Failed to load order details');
+            console.error('Error details:', error.response?.data);
+            alert('Failed to load order details: ' + (error.response?.data?.message || error.message));
         } finally {
             setLoading(false);
         }
@@ -218,7 +225,7 @@ const Payment = () => {
                         </div>
 
                         <button type="submit" className="btn btn-pay-now" style={{ width: '100%', marginTop: '1rem' }}>
-                            {orderId ? `Pay Invoice (Rs ${order?.totalAmount?.toFixed(2) || '0.00'})` : `Confirm Quotation (R${getCartTotal().toFixed(2)})`}
+                            {orderId ? `Pay Invoice (Rs ${Number(order?.totalAmount || 0).toFixed(2)})` : `Request Quotation (R${getCartTotal().toFixed(2)})`}
                         </button>
                     </form>
                 </div>
@@ -262,17 +269,17 @@ const Payment = () => {
                         </div>
                         <div className="summary-row">
                             <span>Sub Total</span>
-                            <span>Rs {orderId ? (order?.totalAmount / 1.18)?.toFixed(2) || '0.00' : getCartTotal().toFixed(2)}</span>
+                            <span>Rs {orderId ? (Number(order?.totalAmount || 0) / 1.18).toFixed(2) : getCartTotal().toFixed(2)}</span>
                         </div>
                         {orderId && (
                             <div className="summary-row">
                                 <span>Tax (18%)</span>
-                                <span>Rs {(order?.totalAmount - (order?.totalAmount / 1.18))?.toFixed(2) || '0.00'}</span>
+                                <span>Rs {(Number(order?.totalAmount || 0) - (Number(order?.totalAmount || 0) / 1.18)).toFixed(2)}</span>
                             </div>
                         )}
                         <div className="summary-row total">
                             <span>Total</span>
-                            <span>Rs {orderId ? order?.totalAmount?.toFixed(2) || '0.00' : getCartTotal().toFixed(2)}</span>
+                            <span>Rs {orderId ? Number(order?.totalAmount || 0).toFixed(2) : getCartTotal().toFixed(2)}</span>
                         </div>
 
                         {/* Back Button */}

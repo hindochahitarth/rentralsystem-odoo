@@ -73,4 +73,17 @@ const requireCustomer = (req, res, next) => {
     next();
 };
 
-module.exports = { protect, authorize, requireVendor, requireCustomer };
+/**
+ * Middleware to require ADMIN role
+ */
+const requireAdmin = (req, res, next) => {
+    if (req.user.role !== 'ADMIN') {
+        return res.status(403).json({
+            success: false,
+            message: 'This action is only available to ADMIN role'
+        });
+    }
+    next();
+};
+
+module.exports = { protect, authorize, requireVendor, requireCustomer, requireAdmin };

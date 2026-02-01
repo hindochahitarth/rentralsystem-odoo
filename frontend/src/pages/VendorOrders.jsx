@@ -156,8 +156,57 @@ const VendorOrders = () => {
         }
     };
 
+    const handleCreateInvoice = async (orderId) => {
+        if (!window.confirm("Generate invoice for this confirmed order?")) return;
+        try {
+            const res = await api.post(`/invoice/create/${orderId}`);
+            if (res.data.success) {
+                alert("Invoice Created Successfully! Customer can now pay.");
+                // Optimistically update to prevent double click (though backend prevents it)
+                // In a real app we'd refetch, but here let's just alert.
+            }
+        } catch (error) {
+            console.error("Invoice Creation Error", error);
+            alert(error.response?.data?.message || "Failed to create invoice.");
+        }
+    };
+
     const handlePrintPickup = (orderId) => alert(`Printing Pickup Slip for Order #${orderId}...`);
     const handlePrintReturn = (orderId) => alert(`Printing Return Receipt for Order #${orderId}...`);
+
+    const getSelectedOrderIds = () => {
+        return Object.entries(checkedItems)
+            .filter(([id, isChecked]) => isChecked && id !== 'all')
+            .map(([id]) => id);
+    };
+
+    const handleBulkAction = async (actionType) => {
+        const selectedIds = getSelectedOrderIds();
+        if (selectedIds.length === 0) {
+            alert(`Please select at least one order to ${actionType}.`);
+            return;
+        }
+
+        if (!window.confirm(`Are you sure you want to mark ${selectedIds.length} orders as ${actionType}?`)) return;
+
+        let successCount = 0;
+        let failCount = 0;
+
+        // processing sequentially to avoid overwhelming server or race conditions on stock if any
+        for (const id of selectedIds) {
+            try {
+                const endpoint = actionType === 'Pickup' ? `/orders/${id}/pickup` : `/orders/${id}/return`;
+                const res = await api.post(endpoint);
+                if (res.data.success) successCount++;
+            } catch (error) {
+                console.error(`${actionType} failed for ${id}`, error);
+                failCount++;
+            }
+        }
+
+        alert(`${actionType} Process Completed.\nSuccessful: ${successCount}\nFailed: ${failCount} (Check order status requirements)`);
+        window.location.reload();
+    };
 
     // --- Filtering Logic ---
     // --- Filtering Logic ---
@@ -288,8 +337,8 @@ const VendorOrders = () => {
 
                     {isVendor && (
                         <div className="action-btns">
-                            <button className="action-btn">Pickup</button>
-                            <button className="action-btn">Return</button>
+                            <button className="action-btn" onClick={() => handleBulkAction('Pickup')}>Pickup</button>
+                            <button className="action-btn" onClick={() => handleBulkAction('Return')}>Return</button>
                         </div>
                     )}
 
@@ -340,6 +389,18 @@ const VendorOrders = () => {
                         <div className="kanban-grid">
                             {filteredOrders.map((order) => (
                                 <div key={order.id} className="kanban-card">
+                                    {/* Checkbox for selection */}
+                                    <div
+                                        className={`custom-checkbox ${checkedItems[order.id] ? 'checked' : ''}`}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            toggleCheckbox(order.id);
+                                        }}
+                                        style={{ position: 'absolute', top: '8px', left: '8px', zIndex: 10 }}
+                                    >
+                                        {checkedItems[order.id] && '✓'}
+                                    </div>
+
                                     <div className="card-header">
                                         <div>
                                             <div className="card-customer">{order.user?.name || 'Guest'}</div>
@@ -373,6 +434,11 @@ const VendorOrders = () => {
                                         {isVendor && order.status === 'QUOTATION' && (
                                             <button className="btn-confirm" onClick={() => handleConfirmOrder(order.id)} style={{ padding: '4px 8px', fontSize: '0.75rem', background: 'var(--success)', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
                                                 Confirm
+                                            </button>
+                                        )}
+                                        {isVendor && (order.status === 'SALES_ORDER' || order.status === 'CONFIRMED') && (
+                                            <button className="btn-confirm" onClick={() => handleCreateInvoice(order.id)} style={{ padding: '4px 8px', fontSize: '0.75rem', background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+                                                Create Invoice
                                             </button>
                                         )}
 
@@ -473,6 +539,9 @@ const VendorOrders = () => {
                                             <td>
                                                 {isVendor && order.status === 'QUOTATION' && (
                                                     <button onClick={() => handleConfirmOrder(order.id)} style={{ fontSize: '0.8rem', cursor: 'pointer' }}>Confirm</button>
+                                                )}
+                                                {isVendor && (order.status === 'SALES_ORDER' || order.status === 'CONFIRMED') && (
+                                                    <button onClick={() => handleCreateInvoice(order.id)} style={{ fontSize: '0.8rem', cursor: 'pointer', color: 'var(--primary)', marginRight: '8px' }}>Create Invoice</button>
                                                 )}
                                                 {!isVendor && (order.status === 'SALES_ORDER' || order.status === 'CONFIRMED') && (
                                                     <button onClick={() => handlePayOrder(order.id)} style={{ fontSize: '0.8rem', cursor: 'pointer', color: 'var(--accent)' }}>Pay Now</button>
