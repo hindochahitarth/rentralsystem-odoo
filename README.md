@@ -314,23 +314,6 @@ GET    /api/reports/vendor         # Get vendor analytics
 4. Discount is saved to cart/order
 5. Usage count is incremented
 
----
-
-## 📸 Screenshots
-
-### Customer Dashboard
-Browse 100+ products with advanced filtering and search.
-
-### Vendor Reports
-Real-time analytics with revenue charts and top products.
-
-### Admin Products
-Manage all vendor products across the platform.
-
-### Cart with Coupon
-Apply dynamic coupons for instant discounts.
-
----
 
 ## 🤝 Contributing
 
@@ -344,30 +327,5 @@ Contributions are welcome! Please follow these steps:
 
 ---
 
-## 📝 License
-
-This project is licensed under the MIT License.
-
----
-
-## 👨‍💻 Developers
-
-- **Your Name** - Initial work
-
----
-
-## 🙏 Acknowledgments
-
-- Built for Odoo Hackathon
-- Inspired by modern rental platforms
-- Uses Prisma ORM for database management
-
----
-
-## 📞 Support
-
-For support, email your-email@example.com or open an issue in the repository.
-
----
 
 **Made with ❤️ for the Odoo Hackathon**
