@@ -4,6 +4,7 @@ const dotenv = require('dotenv');
 const authRoutes = require('./routes/authRoutes');
 const productRoutes = require('./routes/productRoutes');
 const cartRoutes = require('./routes/cartRoutes');
+const adminSettingsRoutes = require('./routes/adminSettingsRoutes');
 
 dotenv.config();
 
@@ -21,6 +22,7 @@ app.use('/api/orders', require('./routes/orderRoutes'));
 app.use('/api/fulfillment', require('./routes/fulfillmentRoutes'));
 app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/invoice', require('./routes/invoiceRoutes'));
+app.use('/api/settings', adminSettingsRoutes);
 app.use('/uploads', express.static('uploads'));
 
 app.get('/health', (req, res) => {

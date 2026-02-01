@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import './AdminDashboard.css';
+import './AdminStyles.css';
 
 const AdminDashboard = () => {
     const { logout } = useAuth();
@@ -33,73 +33,35 @@ const AdminDashboard = () => {
     return (
         <div className="admin-dashboard-page">
             <div className="admin-dashboard-layout">
-                <aside className="admin-sidebar">
-                    <div className="admin-logo">
-                        <h1>RentFlow</h1>
-                        <div className="admin-badge">ADMIN</div>
+                {/* Top Navigation matches Vendor Theme */}
+                <nav className="top-nav">
+                    <div className="nav-container">
+                        <div className="nav-left">
+                            <Link to="/admin/dashboard" className="logo" style={{ textDecoration: 'none', color: 'inherit' }}>
+                                <h1>RentFlow <span style={{ fontSize: '0.8rem', opacity: 0.7 }}>ADMIN</span></h1>
+                            </Link>
+                            <div className="nav-tabs">
+                                <Link to="/admin/dashboard" className="nav-tab active" style={{ textDecoration: 'none' }}>Dashboard</Link>
+                                <Link to="/admin/users" className="nav-tab" style={{ textDecoration: 'none' }}>Users</Link>
+                                <Link to="/admin/products" className="nav-tab" style={{ textDecoration: 'none' }}>Products</Link>
+                                <Link to="/admin/orders" className="nav-tab" style={{ textDecoration: 'none' }}>Orders</Link>
+                                <Link to="/admin/reports" className="nav-tab" style={{ textDecoration: 'none' }}>Reports</Link>
+                                <Link to="/admin/settings" className="nav-tab" style={{ textDecoration: 'none' }}>Settings</Link>
+                            </div>
+                        </div>
+
+                        <div className="nav-right">
+                            <div className="user-menu" onClick={handleLogout} title="Logout">
+                                <div className="user-avatar" style={{ background: 'var(--primary)' }}>AD</div>
+                                <div>
+                                    <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>Administrator</div>
+                                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>System Admin</div>
+                                </div>
+                                <span style={{ marginLeft: '1rem', fontSize: '1.2rem' }}>🚪</span>
+                            </div>
+                        </div>
                     </div>
-
-                    <nav>
-                        <div className="admin-nav-section">
-                            <div className="admin-nav-title">Overview</div>
-                            <Link to="/dashboard" className="admin-nav-item active">
-                                <span>📊</span>
-                                <span>Dashboard</span>
-                            </Link>
-                            <Link to="/dashboard" className="admin-nav-item">
-                                <span>📈</span>
-                                <span>Analytics</span>
-                            </Link>
-                            <Link to="/dashboard" className="admin-nav-item">
-                                <span>📋</span>
-                                <span>Reports</span>
-                            </Link>
-                        </div>
-
-                        <div className="admin-nav-section">
-                            <div className="admin-nav-title">Management</div>
-                            <Link to="/dashboard" className="admin-nav-item">
-                                <span>👥</span>
-                                <span>Users</span>
-                            </Link>
-                            <Link to="/dashboard" className="admin-nav-item">
-                                <span>🏪</span>
-                                <span>Vendors</span>
-                            </Link>
-                            <Link to="/dashboard" className="admin-nav-item">
-                                <span>📦</span>
-                                <span>Products</span>
-                            </Link>
-                            <Link to="/dashboard" className="admin-nav-item">
-                                <span>🛒</span>
-                                <span>Orders</span>
-                            </Link>
-                        </div>
-
-                        <div className="admin-nav-section">
-                            <div className="admin-nav-title">System</div>
-                            <Link to="/dashboard" className="admin-nav-item">
-                                <span>⚙️</span>
-                                <span>Settings</span>
-                            </Link>
-                            <Link to="/dashboard" className="admin-nav-item">
-                                <span>🔧</span>
-                                <span>Configuration</span>
-                            </Link>
-                            <Link to="/dashboard" className="admin-nav-item">
-                                <span>🔒</span>
-                                <span>Security</span>
-                            </Link>
-                        </div>
-
-                        <div className="admin-nav-section">
-                            <button type="button" onClick={handleLogout} className="admin-nav-item">
-                                <span>🚪</span>
-                                <span>Logout</span>
-                            </button>
-                        </div>
-                    </nav>
-                </aside>
+                </nav>
 
                 <main className="admin-main">
                     <div className="admin-header">

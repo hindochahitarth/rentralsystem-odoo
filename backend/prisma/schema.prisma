@@ -172,3 +172,28 @@ model Invoice {
   method      String?
   createdAt   DateTime @default(now())
 }
+
+model RentalPeriod {
+  id        String   @id @default(uuid())
+  name      String
+  duration  Int
+  unit      String   // HOUR, DAY, WEEK, MONTH
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Attribute {
+  id          String           @id @default(uuid())
+  name        String           @unique
+  displayType String           @default("text") // text, color, pill, select
+  values      AttributeValue[]
+}
+
+model AttributeValue {
+  id          String    @id @default(uuid())
+  attributeId String
+  attribute   Attribute @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+  value       String
+  meta        String?
+}
