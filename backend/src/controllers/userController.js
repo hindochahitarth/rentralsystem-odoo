@@ -1,5 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+const bcrypt = require('bcryptjs');
 
 // Get user profile
 const getProfile = async (req, res) => {
@@ -107,8 +108,11 @@ const updatePassword = async (req, res) => {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
 
+        if (!user.password) {
+            return res.status(400).json({ success: false, message: 'User has no password set (possibly social login)' });
+        }
+
         // Verify current password
-        const bcrypt = require('bcryptjs');
         const isMatch = await bcrypt.compare(currentPassword, user.password);
 
         console.log(`Password Match Status: ${isMatch}`);

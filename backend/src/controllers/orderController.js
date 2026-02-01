@@ -290,4 +290,103 @@ const payOrder = async (req, res) => {
     }
 };
 
-module.exports = { createOrder, getOrder, getOrders, exportOrders, confirmOrder, payOrder };
+const pickupOrder = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Transaction: Update status and Decrement Stock
+        const updatedOrder = await prisma.$transaction(async (prisma) => {
+            const order = await prisma.order.findUnique({
+                where: { id },
+                include: { items: { include: { product: true } } }
+            });
+
+            if (!order) throw new Error('Order not found');
+            if (order.status !== 'PAID') throw new Error('Order must be PAID before pickup.');
+
+            // Decrement Stock
+            for (const item of order.items) {
+                await prisma.product.update({
+                    where: { id: item.productId },
+                    data: { quantityOnHand: { decrement: item.quantity } }
+                });
+            }
+
+            return await prisma.order.update({
+                where: { id },
+                data: { status: 'PICKED_UP' }
+            });
+        });
+
+        res.status(200).json({ success: true, message: 'Order picked up. Stock updated.', data: updatedOrder });
+    } catch (error) {
+        console.error('Pickup Error:', error);
+        res.status(error.message === 'Order not found' ? 404 : 400).json({
+            success: false,
+            message: error.message || 'Failed to pickup order'
+        });
+    }
+};
+
+const returnOrder = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const updatedOrder = await prisma.$transaction(async (prisma) => {
+            const order = await prisma.order.findUnique({
+                where: { id },
+                include: { items: { include: { product: true } } }
+            });
+
+            if (!order) throw new Error('Order not found');
+            if (order.status !== 'PICKED_UP') throw new Error('Order must be picked up before return.');
+
+            // Increment Stock
+            for (const item of order.items) {
+                await prisma.product.update({
+                    where: { id: item.productId },
+                    data: { quantityOnHand: { increment: item.quantity } }
+                });
+            }
+
+            // Calculate Late Fee
+            let totalLateFee = 0;
+            const now = new Date();
+
+            for (const item of order.items) {
+                if (item.endDate && now > new Date(item.endDate)) {
+                    // Simple logic: Full daily rate per overdue day
+                    const endDate = new Date(item.endDate);
+                    const diffTime = Math.abs(now - endDate);
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                    if (diffDays > 0) {
+                        const dailyRate = Number(item.price); // Assuming price is basically daily rate roughly
+                        const fee = dailyRate * item.quantity * diffDays;
+                        totalLateFee += fee;
+                    }
+                }
+            }
+
+            return await prisma.order.update({
+                where: { id },
+                data: {
+                    status: 'RETURNED',
+                    lateFee: totalLateFee
+                }
+            });
+        });
+
+        res.status(200).json({
+            success: true,
+            message: 'Order returned. Stock restored.',
+            data: updatedOrder,
+            lateFee: updatedOrder.lateFee
+        });
+    } catch (error) {
+        console.error('Return Error:', error);
+        res.status(500).json({ success: false, message: error.message || 'Failed to return order' });
+    }
+};
+
+module.exports = { createOrder, getOrder, getOrders, exportOrders, confirmOrder, payOrder, pickupOrder, returnOrder };

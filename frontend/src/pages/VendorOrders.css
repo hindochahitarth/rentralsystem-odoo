@@ -21,31 +21,38 @@
 }
 
 /* Top Navigation */
+/* Top Navigation - Aligned with Dashboard */
 .vendor-orders-page .top-nav {
     background: var(--surface);
     border-bottom: 1px solid var(--border);
     padding: 1rem 2rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
 }
 
 .vendor-orders-page .nav-container {
+    max-width: 1400px;
+    margin: 0 auto;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    width: 100%;
 }
 
 .vendor-orders-page .nav-left {
     display: flex;
     align-items: center;
-    gap: 2rem;
+    gap: 3rem;
 }
 
 .vendor-orders-page .logo h1 {
-    font-size: 1.8rem;
+    font-size: 1.5rem;
     font-weight: 800;
     background: linear-gradient(135deg, var(--accent), var(--accent-warm));
     -webkit-background-clip: text;
-    background-clip: text;
     -webkit-text-fill-color: transparent;
+    margin: 0;
 }
 
 .vendor-orders-page .nav-tabs {
@@ -54,18 +61,25 @@
 }
 
 .vendor-orders-page .nav-tab {
-    padding: 0.75rem 1.5rem;
-    background: transparent;
-    border: none;
+    padding: 0.75rem 1.25rem;
     color: var(--text-muted);
-    cursor: pointer;
-    transition: all 0.3s;
+    border: none;
+    background: none;
+    font-family: 'Outfit', sans-serif;
     font-weight: 600;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.3s;
     font-size: 1rem;
 }
 
-.vendor-orders-page .nav-tab:hover,
+.vendor-orders-page .nav-tab:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text);
+}
+
 .vendor-orders-page .nav-tab.active {
+    background: rgba(0, 217, 255, 0.1);
     color: var(--accent);
 }
 
@@ -81,20 +95,17 @@
     gap: 0.75rem;
     padding: 0.5rem 1rem;
     background: var(--surface-light);
-    border: 2px solid var(--border);
     border-radius: 12px;
+    border: 1px solid var(--border);
     cursor: pointer;
     transition: all 0.3s;
 }
 
-.vendor-orders-page .user-menu:hover {
-    border-color: var(--accent);
-}
-
 .vendor-orders-page .user-avatar {
-    width: 40px;
-    height: 40px;
-    background: linear-gradient(135deg, var(--accent), var(--accent-warm));
+    width: 36px;
+    height: 36px;
+    background: var(--accent);
+    color: var(--primary);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -104,6 +115,8 @@
 
 /* Main Header */
 .vendor-orders-page .main-header {
+    max-width: 1400px;
+    margin: 0 auto;
     padding: 2rem;
     display: flex;
     justify-content: space-between;
@@ -266,6 +279,8 @@
 
 /* Sidebar Filter */
 .vendor-orders-page .content-wrapper {
+    max-width: 1400px;
+    margin: 0 auto;
     display: flex;
     gap: 2rem;
     padding: 0 2rem 2rem;

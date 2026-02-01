@@ -18,6 +18,7 @@
 }
 
 /* Top Nav (Reuse) */
+/* Top Navigation - Aligned with VendorDashboard */
 .top-nav {
     background: var(--surface);
     border-bottom: 1px solid var(--border);

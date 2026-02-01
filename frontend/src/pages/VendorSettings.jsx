@@ -5,17 +5,39 @@ import api from '../api/client';
 import './VendorSettings.css';
 
 const VendorSettings = () => {
-    const { user, logout } = useAuth();
+    const { user, logout, updateUser } = useAuth();
     const navigate = useNavigate();
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-    // Mock form state
+    // Mock form state -> Real state
     const [profile, setProfile] = useState({
-        name: user?.name || '',
-        email: user?.email || '',
-        company: 'TechRentals Inc.',
-        phone: '+1 (555) 123-4567',
-        address: '123 Tech Blvd, San Francisco, CA'
+        name: '',
+        email: '',
+        companyName: '',
+        phone: '',
+        address: ''
     });
+
+    React.useEffect(() => {
+        const fetchProfile = async () => {
+            try {
+                const res = await api.get('/users/profile');
+                if (res.data.success) {
+                    const d = res.data.data;
+                    setProfile({
+                        name: d.name || '',
+                        email: d.email || '',
+                        companyName: d.companyName || '',
+                        phone: d.phone || '',
+                        address: d.address || ''
+                    });
+                }
+            } catch (error) {
+                console.error("Failed to fetch profile", error);
+            }
+        };
+        fetchProfile();
+    }, []);
 
     const handleLogout = () => {
         logout();
@@ -26,8 +48,36 @@ const VendorSettings = () => {
         setProfile({ ...profile, [e.target.name]: e.target.value });
     };
 
-    const handleSave = () => {
-        alert("Settings saved successfully!");
+    const handleSave = async () => {
+        try {
+            // Use FormData because backend route uses multer
+            const formData = new FormData();
+            formData.append('name', profile.name);
+            formData.append('phone', profile.phone);
+            formData.append('companyName', profile.companyName);
+            formData.append('address', profile.address);
+            // formData.append('profileImage', file); // Future: Add image upload
+
+            const res = await api.put('/users/profile', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+
+            if (res.data.success) {
+                // Update global context so the header name changes immediately
+                updateUser({
+                    name: profile.name,
+                    phone: profile.phone,
+                    companyName: profile.companyName,
+                    address: profile.address
+                });
+
+                alert("Settings saved successfully!");
+                navigate('/vendor/dashboard');
+            }
+        } catch (error) {
+            console.error("Save Error", error);
+            alert("Failed to save settings: " + (error.response?.data?.message || error.message));
+        }
     };
 
     // Password State
@@ -85,12 +135,22 @@ const VendorSettings = () => {
                     </div>
 
                     <div className="nav-right">
-                        <div className="user-menu" onClick={handleLogout}>
+                        <div className="user-menu" onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
                             <div className="user-avatar">{user?.name ? user.name.substring(0, 2).toUpperCase() : 'VR'}</div>
                             <div>
                                 <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{user?.name || 'TechRentals'}</div>
-                                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Logout</div>
+                                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Vendor</div>
                             </div>
+                            {isDropdownOpen && (
+                                <div className="user-dropdown-menu">
+                                    <Link to="/vendor/settings" className="dropdown-item">
+                                        <span>⚙️</span> Settings
+                                    </Link>
+                                    <button onClick={handleLogout} className="dropdown-item">
+                                        <span>🚪</span> Logout
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -121,7 +181,7 @@ const VendorSettings = () => {
                             </div>
                             <div className="form-group">
                                 <label>Company Name</label>
-                                <input type="text" name="company" value={profile.company} onChange={handleInputChange} />
+                                <input type="text" name="companyName" value={profile.companyName} onChange={handleInputChange} />
                             </div>
                             <div className="form-group">
                                 <label>Phone Number</label>

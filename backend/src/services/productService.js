@@ -52,7 +52,9 @@ async function listProducts(filters = {}) {
         price: Number(p.price),
         durationType: p.durationType,
         stock: p.stock,
+        quantityOnHand: p.quantityOnHand, // Added for frontend consistency
         imageUrl: p.imageUrl,
+        isPublished: p.isPublished, // Added to fix 'always unpublished' issue
         createdAt: p.createdAt,
         variants: p.variants.map((v) => ({ id: v.id, optionName: v.optionName, optionValue: v.optionValue })),
     }));
