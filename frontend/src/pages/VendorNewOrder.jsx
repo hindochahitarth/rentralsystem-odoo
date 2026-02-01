@@ -208,9 +208,21 @@ const VendorNewOrder = () => {
         window.print();
     };
 
-    const handleSend = () => {
-        alert("Quotation sent to customer via email (Mock).");
-        setStatus("Quotation Sent");
+    const handleSend = async () => {
+        if (!createdOrderId) {
+            alert("Please save the order as a draft first (Save to Register).");
+            return;
+        }
+        try {
+            const res = await api.post(`/orders/${createdOrderId}/send`);
+            if (res.data.success) {
+                setStatus('Quotation Sent');
+                alert("Quotation sent successfully!");
+            }
+        } catch (error) {
+            console.error("Send Error", error);
+            alert("Failed to send quotation.");
+        }
     };
 
 
@@ -264,9 +276,9 @@ const VendorNewOrder = () => {
                         <span className="badge-purple">New</span>
                         <h2 className="form-title">Rental order</h2>
                         <div className="toggle-icons no-print">
-                            {/* Mock Green Check and Red X Square */}
-                            <div className="icon-box icon-check">✓</div>
-                            <div className="icon-box icon-close">×</div>
+                            {/* Functional Actions */}
+                            <div className="icon-box icon-check" onClick={() => handleSaveOrder(false)} title="Save Order">✓</div>
+                            <div className="icon-box icon-close" onClick={() => navigate('/vendor/orders')} title="Discard">×</div>
                         </div>
                     </div>
 

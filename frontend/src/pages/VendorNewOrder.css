@@ -12,6 +12,7 @@
     --success: #10b981;
     --warning: #f59e0b;
     --danger: #ef4444;
+    --panel-dark: #1e2130;
 
     /* Specific for New Order */
     --accent-purple: #8b5cf6;
@@ -334,6 +335,12 @@
     color: white;
     font-size: 14px;
     font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.1s;
+}
+
+.icon-box:active {
+    transform: scale(0.95);
 }
 
 .icon-check {
@@ -396,6 +403,12 @@
     font-size: 1rem;
     font-family: inherit;
     transition: border-color 0.2s;
+}
+
+.input-standard option {
+    background-color: var(--panel-dark);
+    color: white;
+    padding: 10px;
 }
 
 .input-standard:focus {

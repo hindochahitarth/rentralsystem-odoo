@@ -1,4 +1,4 @@
-const express = require('express'); // Server restart trigger
+const express = require('express'); // Server restart trigger v2
 const cors = require('cors');
 const dotenv = require('dotenv');
 const authRoutes = require('./routes/authRoutes');
