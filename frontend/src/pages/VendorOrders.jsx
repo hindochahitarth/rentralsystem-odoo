@@ -7,6 +7,7 @@ import './VendorOrders.css';
 const VendorOrders = () => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
+    const isVendor = user?.role === 'VENDOR';
     const [viewMode, setViewMode] = useState('kanban'); // 'kanban' or 'list'
     const [activeFilter, setActiveFilter] = useState('Total');
     const [checkedItems, setCheckedItems] = useState({});
@@ -20,6 +21,7 @@ const VendorOrders = () => {
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [searchQuery, setSearchQuery] = useState('');
     const fileInputRef = React.useRef(null);
 
     React.useEffect(() => {
@@ -27,10 +29,11 @@ const VendorOrders = () => {
             try {
                 const res = await api.get('/orders');
                 if (res.data.success) {
-                    setOrders(res.data.data);
+                    setOrders(Array.isArray(res.data.data) ? res.data.data : []);
                 }
             } catch (error) {
                 console.error("Failed to fetch orders", error);
+                // setOrders([]); // Keep it as initialized [] on error
             } finally {
                 setLoading(false);
             }
@@ -79,14 +82,7 @@ const VendorOrders = () => {
         }
     };
 
-    const filters = [
-        { name: 'Total', count: 7 },
-        { name: 'Sale order', count: 2 },
-        { name: 'Quotation', count: 1 },
-        { name: 'Invoiced', count: 1 },
-        { name: 'Confirmed', count: 1 },
-        { name: 'Cancelled', count: 2 },
-    ];
+
 
     const toggleCheckbox = (id) => {
         setCheckedItems(prev => ({
@@ -128,7 +124,96 @@ const VendorOrders = () => {
         // window.open(`/api/invoices/${orderId}`, '_blank');
     };
 
-    const isVendor = user?.role === 'VENDOR';
+    const handlePickup = async (orderId) => {
+        if (!window.confirm("Confirm pickup for this order? Stock will be deducted.")) return;
+        try {
+            const res = await api.post(`/orders/${orderId}/pickup`);
+            if (res.data.success) {
+                alert("Order Picked Up! Stock updated.");
+                setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'PICKED_UP' } : o));
+            }
+        } catch (error) {
+            console.error("Pickup Error", error);
+            alert(error.response?.data?.message || "Failed to pickup order.");
+        }
+    };
+
+    const handleReturn = async (orderId) => {
+        if (!window.confirm("Confirm return for this order? Stock will be restored.")) return;
+        try {
+            const res = await api.post(`/orders/${orderId}/return`);
+            if (res.data.success) {
+                const lateFee = res.data.lateFee;
+                let msg = "Order Returned! Stock restored.";
+                if (lateFee > 0) msg += `\nLate Fee Applied: R${Number(lateFee).toFixed(2)}`;
+
+                alert(msg);
+                setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'RETURNED', lateFee: lateFee } : o));
+            }
+        } catch (error) {
+            console.error("Return Error", error);
+            alert(error.response?.data?.message || "Failed to return order.");
+        }
+    };
+
+    const handlePrintPickup = (orderId) => alert(`Printing Pickup Slip for Order #${orderId}...`);
+    const handlePrintReturn = (orderId) => alert(`Printing Return Receipt for Order #${orderId}...`);
+
+    // --- Filtering Logic ---
+    // --- Filtering Logic ---
+    const safeOrders = Array.isArray(orders) ? orders : [];
+
+    const filteredOrders = safeOrders.filter(order => {
+        // 1. Status Filter
+        if (activeFilter !== 'Total') {
+            // Map readable Name to status enum if necessary, or just match direct string
+            // Our filters are 'Sale order', 'Quotation' etc. Status is 'SALES_ORDER', 'QUOTATION'
+            // Let's normalize
+            const f = activeFilter.toUpperCase().replace(' ', '_');
+            const s = (order.status || '').toUpperCase(); // Safety check
+
+            // Special handling for 'Sale Order' -> 'SALES_ORDER' mismatch
+            if (f === 'SALE_ORDER' && s !== 'SALES_ORDER') return false;
+
+            // Standard check
+            if (f !== 'SALE_ORDER' && s !== f && order.status !== activeFilter) {
+                if (s !== f) return false;
+            }
+        }
+
+        // 2. Search Filter
+        if (searchQuery) {
+            const q = searchQuery.toLowerCase();
+            const orderNum = order.orderNumber?.toLowerCase() || '';
+            const custName = order.user?.name?.toLowerCase() || '';
+            const prodName = order.items?.[0]?.product?.name?.toLowerCase() || '';
+            return orderNum.includes(q) || custName.includes(q) || prodName.includes(q);
+        }
+        return true;
+    });
+
+    // --- Dynamic Counts ---
+    const getCount = (filterName) => {
+        const safeOrders = Array.isArray(orders) ? orders : [];
+        if (filterName === 'Total') return safeOrders.length;
+        const f = filterName.toUpperCase().replace(' ', '_');
+        return safeOrders.filter(o => {
+            const s = (o.status || '').toUpperCase();
+            if (f === 'SALE_ORDER') return s === 'SALES_ORDER';
+            return s === f;
+        }).length;
+    };
+
+    const filters = [
+        { name: 'Total', count: getCount('Total') },
+        { name: 'Sale order', count: getCount('Sale order') },
+        { name: 'Quotation', count: getCount('Quotation') },
+        { name: 'Invoiced', count: getCount('Invoiced') || getCount('Paid') }, // Paid implies invoiced usually
+        { name: 'Confirmed', count: getCount('Confirmed') },
+        { name: 'Cancelled', count: getCount('Cancelled') },
+        { name: 'Picked Up', count: getCount('Picked Up') }, // Added new status
+        { name: 'Returned', count: getCount('Returned') },
+    ];
 
     return (
         <div className="vendor-orders-page">
@@ -191,7 +276,13 @@ const VendorOrders = () => {
 
                 <div className="header-actions">
                     <div className="search-box">
-                        <input type="text" className="search-input" placeholder="Search orders..." />
+                        <input
+                            type="text"
+                            className="search-input"
+                            placeholder="Search orders..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
                         <button className="search-btn">🔍</button>
                     </div>
 
@@ -247,7 +338,7 @@ const VendorOrders = () => {
                     {/* Kanban View */}
                     <div className={`kanban-view ${viewMode === 'kanban' ? 'active' : ''}`}>
                         <div className="kanban-grid">
-                            {orders.map((order) => (
+                            {filteredOrders.map((order) => (
                                 <div key={order.id} className="kanban-card">
                                     <div className="card-header">
                                         <div>
@@ -259,7 +350,14 @@ const VendorOrders = () => {
                                         {order.items?.[0]?.product?.name || 'Item'}
                                         {order.items?.length > 1 && ` (+${order.items.length - 1})`}
                                     </div>
-                                    <div className="card-price">R{Number(order.totalAmount).toFixed(2)}</div>
+                                    <div className="card-price">
+                                        R{Number(order.totalAmount).toFixed(2)}
+                                        {Number(order.lateFee) > 0 && (
+                                            <div style={{ color: 'var(--accent)', fontSize: '0.75rem', marginTop: '2px' }}>
+                                                + Late Fee: R{Number(order.lateFee).toFixed(2)}
+                                            </div>
+                                        )}
+                                    </div>
                                     <div className="card-duration">
                                         {order.items?.[0]?.startDate ?
                                             `${new Date(order.items[0].startDate).toLocaleDateString()} - ${new Date(order.items[0].endDate).toLocaleDateString()}`
@@ -287,14 +385,40 @@ const VendorOrders = () => {
 
                                         {/* Invoice Action */}
                                         {order.status === 'PAID' && (
-                                            <button className="btn-invoice" onClick={() => handlePrintInvoice(order.id)} style={{ padding: '4px 8px', fontSize: '0.75rem', background: 'var(--surface-light)', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: '4px', cursor: 'pointer' }}>
-                                                Invoice 📄
+                                            <div style={{ display: "flex", gap: "0.5rem" }}>
+                                                {isVendor && (
+                                                    <button className="btn-confirm" onClick={() => handlePickup(order.id)} style={{ padding: '4px 8px', fontSize: '0.75rem', background: 'var(--accent-warm)', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+                                                        Pickup
+                                                    </button>
+                                                )}
+                                                <button className="btn-invoice" onClick={() => handlePrintInvoice(order.id)} style={{ padding: '4px 8px', fontSize: '0.75rem', background: 'var(--surface-light)', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: '4px', cursor: 'pointer' }}>
+                                                    Inv 📄
+                                                </button>
+                                                <button className="btn-invoice" onClick={() => handlePrintPickup(order.id)} style={{ padding: '4px 8px', fontSize: '0.75rem', background: 'var(--surface-light)', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: '4px', cursor: 'pointer' }}>
+                                                    Slip 🚚
+                                                </button>
+                                            </div>
+                                        )}
+
+                                        {/* Return Action */}
+                                        {isVendor && order.status === 'PICKED_UP' && (
+                                            <div style={{ display: "flex", gap: "0.5rem" }}>
+                                                <button className="btn-confirm" onClick={() => handleReturn(order.id)} style={{ padding: '4px 8px', fontSize: '0.75rem', background: 'var(--success)', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+                                                    Return
+                                                </button>
+                                            </div>
+                                        )}
+
+                                        {/* Completed/Returned Actions */}
+                                        {order.status === 'RETURNED' && (
+                                            <button className="btn-invoice" onClick={() => handlePrintReturn(order.id)} style={{ padding: '4px 8px', fontSize: '0.75rem', background: 'var(--surface-light)', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: '4px', cursor: 'pointer' }}>
+                                                Receipt 🧾
                                             </button>
                                         )}
                                     </div>
                                 </div>
                             ))}
-                            {orders.length === 0 && !loading && <div style={{ color: '#fff' }}>No orders found.</div>}
+                            {(!orders || orders.length === 0) && !loading && <div style={{ color: '#fff', textAlign: 'center', padding: '2rem' }}>No orders found.</div>}
                         </div>
                     </div>
 
@@ -323,7 +447,7 @@ const VendorOrders = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {orders.map((order) => (
+                                    {filteredOrders.map((order) => (
                                         <tr key={order.id}>
                                             <td className="checkbox-cell">
                                                 <div
@@ -359,7 +483,7 @@ const VendorOrders = () => {
                                             </td>
                                         </tr>
                                     ))}
-                                    {orders.length === 0 && !loading && (
+                                    {(!orders || orders.length === 0) && !loading && (
                                         <tr><td colSpan="8" style={{ textAlign: 'center', padding: '2rem' }}>No orders found</td></tr>
                                     )}
                                 </tbody>

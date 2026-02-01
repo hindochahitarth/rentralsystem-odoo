@@ -8,6 +8,7 @@ const VendorNewOrder = () => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
     const [status, setStatus] = useState('Quotation');
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
     // Data State
     const [customers, setCustomers] = useState([]);
@@ -215,34 +216,40 @@ const VendorNewOrder = () => {
 
     return (
         <div className="vendor-new-order-page">
-            {/* Left Sidebar Mockup (Ideally separate component, but keeping structure per previous request) */}
-            <div className="layout-sidebar-mockup no-print">
-                {/* This is simulated/hidden for now as we use Top Nav in this template, 
-                   but the requested mockup had a different layout. 
-                   We will stick to the existing Top Nav to keep site consistency unless Sidebar is strictly requested.
-                */}
-            </div>
-
             {/* Top Navigation (Existing) */}
-            <nav className="top-nav no-print">
+            {/* Top Navigation (Standardized) */}
+            <nav className="top-nav">
                 <div className="nav-container">
                     <div className="nav-left">
-                        <Link to="/details" className="logo" style={{ textDecoration: 'none', color: 'inherit' }}>
+                        <Link to="/dashboard" className="logo" style={{ textDecoration: 'none', color: 'inherit' }}>
                             <h1>RentFlow</h1>
                         </Link>
-                        {/* Breadcrumb-like title */}
-                        <div style={{ marginLeft: '2rem', fontSize: '1.2rem', fontWeight: 600, color: '#e0e0e0' }}>
-                            New Order Page
+                        <div className="nav-tabs">
+                            <Link to="/dashboard" className="nav-tab" style={{ textDecoration: 'none' }}>Dashboard</Link>
+                            <Link to="/vendor/orders" className="nav-tab" style={{ textDecoration: 'none' }}>Orders</Link>
+                            <Link to="/vendor/products" className="nav-tab" style={{ textDecoration: 'none' }}>Products</Link>
+                            <Link to="/vendor/reports" className="nav-tab" style={{ textDecoration: 'none' }}>Reports</Link>
+                            <Link to="/vendor/settings" className="nav-tab" style={{ textDecoration: 'none' }}>Settings</Link>
                         </div>
                     </div>
 
                     <div className="nav-right">
-                        <div className="user-menu" onClick={handleLogout}>
+                        <div className="user-menu" onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
                             <div className="user-avatar">{user?.name ? user.name.substring(0, 2).toUpperCase() : 'VR'}</div>
                             <div>
                                 <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{user?.name || 'TechRentals'}</div>
-                                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Logout</div>
+                                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Vendor</div>
                             </div>
+                            {isDropdownOpen && (
+                                <div className="user-dropdown-menu">
+                                    <Link to="/vendor/settings" className="dropdown-item">
+                                        <span>⚙️</span> Settings
+                                    </Link>
+                                    <button onClick={handleLogout} className="dropdown-item">
+                                        <span>🚪</span> Logout
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -251,35 +258,38 @@ const VendorNewOrder = () => {
             {/* Main Content Area */}
             <div className="page-content-wrapper">
 
-                {/* Header Actions & Pipeline */}
-                <div className="control-panel">
-                    <div className="action-bar">
-                        <button className="btn-action-primary" onClick={handleSend}>Send</button>
-                        <button className="btn-action-secondary" onClick={() => createdOrderId && handleConfirmOrder(createdOrderId)}>Confirm</button>
-                        <button className="btn-action-secondary" onClick={handlePrint}>Print</button>
-
-                        {/* Only visible when Confirmed (Sale Order) */}
-                        {(status === 'Sale Order') && (
-                            <button className="btn-action-accent" onClick={handleCreateInvoice}>Create Invoice</button>
-                        )}
-                    </div>
-
-                    <div className="pipeline-status">
-                        <div className={`pipeline-step ${status === 'Quotation' ? 'active' : ''}`}>Quotation</div>
-                        <div className={`pipeline-step ${status === 'Quotation Sent' ? 'active' : ''}`}>Quotation Sent</div>
-                        <div className={`pipeline-step ${status === 'Sale Order' ? 'active' : ''}`}>Sale Order</div>
-                    </div>
-                </div>
-
                 {/* Main Form Card */}
                 <main className="order-form-card">
                     <div className="order-header-row">
-                        <div className="status-badge-group">
-                            <span className="badge-purple">New</span>
-                            <h2 className="form-title">Rental order</h2>
-                            <div className="toggle-icons no-print">
-                                <span className={createdOrderId ? "icon-checked" : "icon-unchecked"}></span>
+                        <span className="badge-purple">New</span>
+                        <h2 className="form-title">Rental order</h2>
+                        <div className="toggle-icons no-print">
+                            {/* Mock Green Check and Red X Square */}
+                            <div className="icon-box icon-check">✓</div>
+                            <div className="icon-box icon-close">×</div>
+                        </div>
+                    </div>
+
+                    {/* Header Actions & Pipeline */}
+                    <div className="control-panel">
+                        <div className="action-bar">
+                            <button className="btn-action-primary" onClick={handleSend}>Send</button>
+                            <button className="btn-action-secondary" onClick={() => createdOrderId && handleConfirmOrder(createdOrderId)}>Confirm</button>
+                            <button className="btn-action-secondary" onClick={handlePrint}>Print</button>
+
+                            {(status === 'Sale Order') && (
+                                <button className="btn-action-accent" onClick={handleCreateInvoice}>Create Invoice</button>
+                            )}
+                            {/* Mock "Genuine Caribou" Badge/Tag relative to user */}
+                            <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}>
+                                {selectedCustomer && <span className="tag-purple-pill">Genuine Caribou</span>}
                             </div>
+                        </div>
+
+                        <div className="pipeline-status">
+                            <div className={`pipeline-step ${status === 'Quotation' ? 'active' : ''}`}>Quotation</div>
+                            <div className={`pipeline-step ${status === 'Quotation Sent' ? 'active' : ''}`}>Quotation Sent</div>
+                            <div className={`pipeline-step ${status === 'Sale Order' ? 'active' : ''}`}>Sale Order</div>
                         </div>
                     </div>
 

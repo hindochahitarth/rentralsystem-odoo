@@ -5,7 +5,9 @@ const {
     getOrders,
     exportOrders,
     confirmOrder,
-    payOrder
+    payOrder,
+    pickupOrder,
+    returnOrder
 } = require('../controllers/orderController');
 const { protect } = require('../middlewares/authMiddleware');
 
@@ -20,6 +22,8 @@ router.get('/:id', protect, getOrder);
 // Order actions
 router.post('/:id/confirm', protect, confirmOrder); // Confirm order (vendor)
 router.post('/:id/pay', protect, payOrder); // Pay order (customer)
+router.post('/:id/pickup', protect, pickupOrder); // Mark picked up (vendor)
+router.post('/:id/return', protect, returnOrder); // Mark returned (vendor)
 
 module.exports = router;
 

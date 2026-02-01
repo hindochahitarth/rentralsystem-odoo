@@ -11,6 +11,7 @@ const VendorProducts = () => {
     const [loading, setLoading] = useState(true);
     const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
     const [searchTerm, setSearchTerm] = useState('');
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
     useEffect(() => {
         fetchProducts();
@@ -70,12 +71,22 @@ const VendorProducts = () => {
                     </div>
 
                     <div className="nav-right">
-                        <div className="user-menu" onClick={handleLogout}>
+                        <div className="user-menu" onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
                             <div className="user-avatar">{user?.name ? user.name.substring(0, 2).toUpperCase() : 'VR'}</div>
                             <div>
                                 <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{user?.name || 'TechRentals'}</div>
-                                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Logout</div>
+                                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Vendor</div>
                             </div>
+                            {isDropdownOpen && (
+                                <div className="user-dropdown-menu">
+                                    <Link to="/vendor/settings" className="dropdown-item">
+                                        <span>⚙️</span> Settings
+                                    </Link>
+                                    <button onClick={handleLogout} className="dropdown-item">
+                                        <span>🚪</span> Logout
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

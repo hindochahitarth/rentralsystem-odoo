@@ -34,3 +34,46 @@ select.input-select {
   background-size: 1.5em 1.5em;
   padding-right: 2.5rem;
 }
+
+/* User Dropdown Menu (Global) */
+.user-menu {
+  position: relative;
+  cursor: pointer;
+}
+
+.user-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 0.5rem;
+  background-color: #1f2937;
+  border: 1px solid #374151;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  min-width: 150px;
+  z-index: 50;
+  overflow: hidden;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  color: #e5e7eb;
+  /* text-gray-200 */
+  text-decoration: none;
+  transition: background-color 0.2s;
+  background: none;
+  border: none;
+  font-size: 0.875rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dropdown-item:hover {
+  background-color: #374151;
+  /* bg-gray-700 */
+  color: #ffffff;
+}
