@@ -28,6 +28,11 @@ import { lazy, Suspense } from 'react';
 const VendorReports = lazy(() => import('./pages/VendorReports'));
 const VendorSettings = lazy(() => import('./pages/VendorSettings'));
 const VendorProducts = lazy(() => import('./pages/VendorProducts'));
+const AdminOrders = lazy(() => import('./pages/AdminOrders'));
+const AdminProducts = lazy(() => import('./pages/AdminProducts'));
+const AdminUsers = lazy(() => import('./pages/AdminUsers'));
+const AdminReports = lazy(() => import('./pages/AdminReports'));
+const AdminSettings = lazy(() => import('./pages/AdminSettings'));
 import CustomerDashboard from './pages/customer/CustomerDashboard';
 import CustomerOrders from './pages/customer/CustomerOrders';
 import CustomerOrderDetail from './pages/customer/CustomerOrderDetail';
@@ -265,6 +270,56 @@ function App() {
                                             </ProtectedRoute>
                                         }
                                     />
+                                    {/* Admin Routes */}
+                                    <Route
+                                        path="/admin/dashboard"
+                                        element={
+                                            <ProtectedRoute requiredRole="ADMIN">
+                                                <AdminDashboard />
+                                            </ProtectedRoute>
+                                        }
+                                    />
+                                    <Route
+                                        path="/admin/orders"
+                                        element={
+                                            <ProtectedRoute requiredRole="ADMIN">
+                                                <AdminOrders />
+                                            </ProtectedRoute>
+                                        }
+                                    />
+                                    <Route
+                                        path="/admin/products"
+                                        element={
+                                            <ProtectedRoute requiredRole="ADMIN">
+                                                <AdminProducts />
+                                            </ProtectedRoute>
+                                        }
+                                    />
+                                    <Route
+                                        path="/admin/users"
+                                        element={
+                                            <ProtectedRoute requiredRole="ADMIN">
+                                                <AdminUsers />
+                                            </ProtectedRoute>
+                                        }
+                                    />
+                                    <Route
+                                        path="/admin/reports"
+                                        element={
+                                            <ProtectedRoute requiredRole="ADMIN">
+                                                <AdminReports />
+                                            </ProtectedRoute>
+                                        }
+                                    />
+                                    <Route
+                                        path="/admin/settings"
+                                        element={
+                                            <ProtectedRoute requiredRole="ADMIN">
+                                                <AdminSettings />
+                                            </ProtectedRoute>
+                                        }
+                                    />
+
                                     <Route path="*" element={<Navigate to="/" replace />} />
                                 </Routes>
                             </Suspense>

@@ -4,6 +4,7 @@ const {
     getOrder,
     getOrders,
     exportOrders,
+    sendOrder,
     confirmOrder,
     payOrder,
     pickupOrder,
@@ -20,6 +21,7 @@ router.get('/', protect, getOrders);
 router.get('/:id', protect, getOrder);
 
 // Order actions
+router.post('/:id/send', protect, sendOrder); // Send quotation (vendor)
 router.post('/:id/confirm', protect, confirmOrder); // Confirm order (vendor)
 router.post('/:id/pay', protect, payOrder); // Pay order (customer)
 router.post('/:id/pickup', protect, pickupOrder); // Mark picked up (vendor)

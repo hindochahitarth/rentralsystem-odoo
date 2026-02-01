@@ -181,6 +181,33 @@ const exportOrders = async (req, res) => {
     }
 };
 
+const sendOrder = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const order = await prisma.order.findUnique({ where: { id } });
+
+        if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
+
+        if (order.status !== 'QUOTATION') {
+            return res.status(400).json({ success: false, message: 'Order must be a draft Quotation to send.' });
+        }
+
+        const updatedOrder = await prisma.order.update({
+            where: { id },
+            data: { status: 'QUOTATION_SENT' }
+        });
+
+        // Mock Email Sending Logic here in future
+        console.log(`Sending quotation email to order ${order.orderNumber}`);
+
+        res.status(200).json({ success: true, message: 'Quotation sent successfully', data: updatedOrder });
+
+    } catch (error) {
+        console.error('Send Order Error:', error);
+        res.status(500).json({ success: false, message: 'Failed to send quotation' });
+    }
+};
+
 const confirmOrder = async (req, res) => {
     try {
         const { id } = req.params;
@@ -389,4 +416,4 @@ const returnOrder = async (req, res) => {
     }
 };
 
-module.exports = { createOrder, getOrder, getOrders, exportOrders, confirmOrder, payOrder, pickupOrder, returnOrder };
+module.exports = { createOrder, getOrder, getOrders, exportOrders, sendOrder, confirmOrder, payOrder, pickupOrder, returnOrder };
